@@ -16,7 +16,8 @@ import java.util.concurrent.TimeUnit
 data class OptimizeReq(
     @Json(name = "resume_text") val resumeText: String,
     @Json(name = "jd_text") val jdText: String,
-    @Json(name = "user_id") val userId: String? = null
+    @Json(name = "user_id") val userId: String? = null,
+    @Json(name = "style") val style: String? = null
 )
 
 /* ===================== Analysis DTO（来自后端） ===================== */

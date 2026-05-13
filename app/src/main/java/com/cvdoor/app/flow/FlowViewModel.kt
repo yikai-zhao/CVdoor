@@ -350,14 +350,14 @@ class FlowViewModel(app: Application) : AndroidViewModel(app) {
         }
     }
 
-    fun regenerateCoverLetter() {
+    fun regenerateCoverLetter(style: String = "professional") {
         val s = _state.value
         if (s.resumeText.isBlank() || s.jdText.isBlank()) return
         
         viewModelScope.launch {
             _state.update { it.copy(phase = FlowPhase.LOADING, progressStep = 4, errorMsg = "") }
             try {
-                val resp = api.generateCoverLetter(OptimizeReq(s.resumeText, s.jdText, null))
+                val resp = api.generateCoverLetter(OptimizeReq(s.resumeText, s.jdText, null, style))
                 if (resp.coverLetter.isBlank()) {
                     _state.update { it.copy(phase = FlowPhase.ERROR, errorMsg = "AI 未能生成求职信") }
                     return@launch

@@ -60,6 +60,7 @@ class OptimizeReq(BaseModel):
     resume_text: str
     jd_text: str
     user_id: Optional[str] = None
+    style: Optional[str] = None
 
 class DimAnalysisOut(BaseModel):
     name: str
@@ -161,6 +162,23 @@ SYSTEM_PROMPT = """你是资深 ATS 简历优化专家兼专业求职信撰写�
 
 def _build_user_msg(resume: str, jd: str) -> str:
     return f"【简历】\n{resume.strip()}\n\n【职位JD】\n{jd.strip()}"
+
+def _normalize_cover_letter_style(style: Optional[str]) -> str:
+    allowed = {"professional", "natural", "brief"}
+    s = (style or "").strip().lower()
+    return s if s in allowed else "professional"
+
+def _resume_focus_excerpt(resume: str, max_chars: int = 3500) -> str:
+    text = (resume or "").strip()
+    if len(text) <= max_chars:
+        return text
+    lines = [ln.strip() for ln in text.splitlines() if ln.strip()]
+    if not lines:
+        return text[:max_chars]
+    head = "\n".join(lines[:10]).strip()
+    tail = "\n".join(lines[-10:]).strip()
+    merged = f"{head}\n...\n{tail}".strip()
+    return merged[:max_chars]
 
 def _try_parse_json(text: str):
     try:
@@ -366,16 +384,18 @@ def _call_gpt(resume: str, jd: str) -> dict:
 
 def _generate_cover_letter_only(resume: str, jd: str, style: str = "professional") -> str:
     """专门生成求职信（用于"重新生成"功能）"""
+    normalized_style = _normalize_cover_letter_style(style)
+    resume_context = _resume_focus_excerpt(resume)
     cover_letter_prompt = f"""你是专业求职信撰写专家。根据以下信息生成一份高质量的英文求职信。
 
-【简历摘要】
-{resume[:500]}...
+【简历】
+{resume_context}
 
 【职位JD】
 {jd}
 
 【风格】
-{style}（可选值：professional=正式版, natural=自然版, brief=简短版）
+{normalized_style}（可选值：professional=正式版, natural=自然版, brief=简短版）
 
 要求：
 1. 250-300词的求职信
@@ -471,15 +491,22 @@ def optimize(body: OptimizeReq):
         resp.optimized = _force_quantified_bullets(resp.optimized)
         resp.analysis = _ensure_quant_actions(resp.analysis)
 
-        # 自动生成 Cover Letter（基于优化后的简历）
-        try:
-            cover_letter = _generate_cover_letter_only(resp.optimized, body.jd_text)
-            if cover_letter and len(cover_letter) > 100:
-                resp.cover_letter = cover_letter
-        except Exception as e:
-            if DEBUG:
-                print(f"Cover letter generation during optimize failed: {e}")
-            # 不中断主流程，Cover Letter 生成失败不影响简历优化结果
+        # 补齐 Cover Letter：优先沿用主调用结果，缺失或质量不足时才补调一次
+        existing_letter = (resp.cover_letter or "").strip()
+        needs_cover_letter_retry = (
+            len(existing_letter) < 180
+            or "[" in existing_letter
+            or "..." in existing_letter
+        )
+        if needs_cover_letter_retry:
+            try:
+                cover_letter = _generate_cover_letter_only(resp.optimized, body.jd_text, body.style or "professional")
+                if cover_letter and len(cover_letter) > 100:
+                    resp.cover_letter = cover_letter
+            except Exception as e:
+                if DEBUG:
+                    print(f"Cover letter generation during optimize failed: {e}")
+                # 不中断主流程，Cover Letter 生成失败不影响简历优化结果
 
         if body.user_id and body.user_id.strip():
             record_id, created_at = _save_record(
@@ -503,7 +530,7 @@ def generate_cover_letter(body: OptimizeReq):
     if not body.resume_text.strip() or not body.jd_text.strip():
         raise HTTPException(status_code=400, detail="resume_text 和 jd_text 不能为空")
     try:
-        cover_letter = _generate_cover_letter_only(body.resume_text, body.jd_text)
+        cover_letter = _generate_cover_letter_only(body.resume_text, body.jd_text, body.style or "professional")
         if not cover_letter:
             raise HTTPException(status_code=500, detail="AI 未能生成求职信")
         return {"cover_letter": cover_letter}

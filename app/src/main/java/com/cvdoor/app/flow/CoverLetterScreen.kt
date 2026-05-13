@@ -32,14 +32,31 @@ fun CoverLetterScreen(
 ) {
     val result = state.result ?: return
     val coverLetter = state.editedCoverLetter.ifBlank { result.coverLetter }
+    val styleOptions = listOf(
+        "正式版" to "professional",
+        "自然版" to "natural",
+        "简短版" to "brief"
+    )
     val clipboard = LocalClipboardManager.current
     val ctx = LocalContext.current
     var isEditing by remember { mutableStateOf(false) }
     var editText by remember { mutableStateOf(coverLetter) }
     var copyDone by remember { mutableStateOf(false) }
     var showExportDialog by remember { mutableStateOf(false) }
+    var selectedStyle by remember { mutableStateOf("professional") }
     var isRegenerating by remember { mutableStateOf(false) }
     var regenerateError by remember { mutableStateOf("") }
+
+    LaunchedEffect(state.phase, state.errorMsg) {
+        if (isRegenerating && state.phase != FlowPhase.LOADING) {
+            isRegenerating = false
+            regenerateError = if (state.phase == FlowPhase.ERROR) {
+                state.errorMsg.ifBlank { "求职信生成失败，请重试" }
+            } else {
+                ""
+            }
+        }
+    }
 
     // one-time consistency checks
     val checks = listOf(
@@ -98,15 +115,15 @@ fun CoverLetterScreen(
 
             // Cover letter content
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                Text("风格选择（仅展示中文模版）", fontSize = 12.sp, color = TextSecondary)
+                Text("风格选择", fontSize = 12.sp, color = TextSecondary)
             }
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                listOf("正式版", "自然版", "简短版", "英文版", "香港版").forEach { style ->
+                styleOptions.forEach { (styleLabel, styleValue) ->
                     AssistChip(
-                        onClick = {},  // 提示：AI生成的内容会自动适配所有风格
-                        label = { Text(style, fontSize = 11.sp) },
+                        onClick = { selectedStyle = styleValue },
+                        label = { Text(styleLabel, fontSize = 11.sp) },
                         colors = AssistChipDefaults.assistChipColors(
-                            labelColor = TextSecondary
+                            labelColor = if (selectedStyle == styleValue) TextPrimary else TextSecondary
                         )
                     )
                 }
@@ -209,7 +226,7 @@ fun CoverLetterScreen(
                     onClick = {
                         isRegenerating = true
                         regenerateError = ""
-                        vm.regenerateCoverLetter()
+                        vm.regenerateCoverLetter(selectedStyle)
                     },
                     modifier = Modifier.weight(1f).height(44.dp),
                     shape = RoundedCornerShape(10.dp),
