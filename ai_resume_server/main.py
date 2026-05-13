@@ -283,7 +283,7 @@ def _parse_response(obj: dict) -> OptimizeResp:
 _BULLET_RE = re.compile(r"^\s*(?:[-*•·▪]|\d+[\).、])\s+")
 _METRIC_RE = re.compile(r"(\d|%|％|x|倍|HK\$|\$|¥|人|名|个|次|小时|天|周|月|年)")
 _PLACEHOLDER_RE = re.compile(
-    r"\[(?:请补充|待补充|待填写|to be filled|tbd|company|position|metric|数字|xxx)[^\]]{0,40}\]",
+    r"\[(?:请补充|待补充|待填写|to be filled|tbd|company|position|metric|数字|xxx)[^\]\n]{0,20}\]",
     re.IGNORECASE
 )
 
@@ -380,9 +380,6 @@ def _cover_letter_needs_retry(text: Optional[str]) -> bool:
     lowered = t.lower()
     quality_risk_markers = (
         "lorem ipsum",
-        "[company",
-        "[position",
-        "to be filled",
         "tbd",
         "xxx",
     )
