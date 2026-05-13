@@ -183,6 +183,8 @@ def _resume_focus_excerpt(resume: str, max_chars: int = MAX_RESUME_CONTEXT_CHARS
     lines = [ln.strip() for ln in text.splitlines() if ln.strip()]
     if not lines:
         return text[:max_chars]
+    if len(lines) <= RESUME_EXCERPT_HEAD_LINES + RESUME_EXCERPT_TAIL_LINES:
+        return text[:max_chars]
     head = "\n".join(lines[:RESUME_EXCERPT_HEAD_LINES]).strip()
     tail = "\n".join(lines[-RESUME_EXCERPT_TAIL_LINES:]).strip()
     merged = f"{head}\n...\n{tail}".strip()
@@ -280,7 +282,10 @@ def _parse_response(obj: dict) -> OptimizeResp:
 
 _BULLET_RE = re.compile(r"^\s*(?:[-*•·▪]|\d+[\).、])\s+")
 _METRIC_RE = re.compile(r"(\d|%|％|x|倍|HK\$|\$|¥|人|名|个|次|小时|天|周|月|年)")
-_PLACEHOLDER_RE = re.compile(r"\[[^\]]{1,60}\]")
+_PLACEHOLDER_RE = re.compile(
+    r"\[(?:请补充|待补充|待填写|to be filled|tbd|company|position|metric|数字|xxx)[^\]]{0,40}\]",
+    re.IGNORECASE
+)
 
 def _lines(text: str):
     return [ln.strip() for ln in (text or "").splitlines() if ln.strip()]
@@ -383,7 +388,7 @@ def _cover_letter_needs_retry(text: Optional[str]) -> bool:
     )
     if any(marker in lowered for marker in quality_risk_markers):
         return True
-    return t.endswith("...")
+    return False
 
 
 def _call_gpt(resume: str, jd: str) -> dict:
