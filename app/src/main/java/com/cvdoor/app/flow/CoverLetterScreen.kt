@@ -44,7 +44,7 @@ fun CoverLetterScreen(
     var editText by remember { mutableStateOf(coverLetter) }
     var copyDone by remember { mutableStateOf(false) }
     var showExportDialog by remember { mutableStateOf(false) }
-    var selectedStyle by rememberSaveable { mutableStateOf("professional") }
+    var selectedStyle by rememberSaveable { mutableStateOf(DEFAULT_COVER_LETTER_STYLE) }
     var isRegenerating by remember { mutableStateOf(false) }
     var regenerateError by remember { mutableStateOf("") }
 

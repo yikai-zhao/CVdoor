@@ -65,6 +65,8 @@ data class FlowResult(
     val dimScores: List<Pair<String, Int>> = emptyList()
 )
 
+const val DEFAULT_COVER_LETTER_STYLE = "professional"
+
 class FlowViewModel(app: Application) : AndroidViewModel(app) {
     private val _state = MutableStateFlow(FlowUiState())
     val state: StateFlow<FlowUiState> = _state.asStateFlow()
@@ -350,7 +352,7 @@ class FlowViewModel(app: Application) : AndroidViewModel(app) {
         }
     }
 
-    fun regenerateCoverLetter(style: String = "professional") {
+    fun regenerateCoverLetter(style: String = DEFAULT_COVER_LETTER_STYLE) {
         val s = _state.value
         if (s.resumeText.isBlank() || s.jdText.isBlank()) return
         

@@ -283,7 +283,7 @@ def _parse_response(obj: dict) -> OptimizeResp:
 _BULLET_RE = re.compile(r"^\s*(?:[-*•·▪]|\d+[\).、])\s+")
 _METRIC_RE = re.compile(r"(\d|%|％|x|倍|HK\$|\$|¥|人|名|个|次|小时|天|周|月|年)")
 _PLACEHOLDER_RE = re.compile(
-    r"\[(?:请补充|待补充|待填写|to be filled|tbd|company|position|metric|数字)[\w\s\-:：，,]{0,20}\]",
+    r"\[(?:请补充|待补充|待填写|to be filled|tbd|company|position|metric|数字)[\w\s\-:：，,]*\]",
     re.IGNORECASE
 )
 
@@ -378,6 +378,7 @@ def _cover_letter_needs_retry(text: Optional[str]) -> bool:
     if _PLACEHOLDER_RE.search(t):
         return True
     lowered = t.lower()
+    # 补充兜底：用于识别未被占位符正则覆盖的英文模板残留片段
     quality_risk_markers = (
         "lorem ipsum",
         "tbd",
@@ -522,7 +523,7 @@ def optimize(body: OptimizeReq):
         resp.analysis = _ensure_quant_actions(resp.analysis)
 
         # 补齐 Cover Letter：优先沿用主调用结果，缺失或质量不足时才补调一次
-        # 仅当主调用结果明显缺失或存在模板化/占位痕迹时，才重新生成，避免覆盖掉已生成的高质量版本。
+        # 仅当 _call_gpt 主调用结果明显缺失或存在模板化/占位痕迹时，才重新生成，避免覆盖已生成的高质量版本。
         needs_cover_letter_retry = _cover_letter_needs_retry(resp.cover_letter)
         if needs_cover_letter_retry:
             try:
