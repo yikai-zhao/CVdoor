@@ -25,6 +25,14 @@ DB_PATH = os.getenv("DB_PATH", "cvdoor.db")
 
 client = OpenAI(api_key=OPENAI_API_KEY)
 
+# Cover letter generation heuristics:
+# - keep enough resume context for personalization without exploding prompt size
+# - ensure final cover letter has at least substantial body length
+MAX_RESUME_CONTEXT_CHARS = 3500
+RESUME_EXCERPT_HEAD_LINES = 10
+RESUME_EXCERPT_TAIL_LINES = 10
+MIN_COVER_LETTER_LENGTH = 180
+
 # ===== SQLite =====
 _db_lock = threading.Lock()
 
@@ -168,15 +176,15 @@ def _normalize_cover_letter_style(style: Optional[str]) -> str:
     s = (style or "").strip().lower()
     return s if s in allowed else "professional"
 
-def _resume_focus_excerpt(resume: str, max_chars: int = 3500) -> str:
+def _resume_focus_excerpt(resume: str, max_chars: int = MAX_RESUME_CONTEXT_CHARS) -> str:
     text = (resume or "").strip()
     if len(text) <= max_chars:
         return text
     lines = [ln.strip() for ln in text.splitlines() if ln.strip()]
     if not lines:
         return text[:max_chars]
-    head = "\n".join(lines[:10]).strip()
-    tail = "\n".join(lines[-10:]).strip()
+    head = "\n".join(lines[:RESUME_EXCERPT_HEAD_LINES]).strip()
+    tail = "\n".join(lines[-RESUME_EXCERPT_TAIL_LINES:]).strip()
     merged = f"{head}\n...\n{tail}".strip()
     return merged[:max_chars]
 
@@ -360,7 +368,7 @@ def _force_quantified_bullets(text: str) -> str:
 
 def _cover_letter_needs_retry(text: Optional[str]) -> bool:
     t = (text or "").strip()
-    if len(t) < 180:
+    if len(t) < MIN_COVER_LETTER_LENGTH:
         return True
     if _PLACEHOLDER_RE.search(t):
         return True
