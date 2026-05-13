@@ -65,6 +65,8 @@ data class FlowResult(
     val dimScores: List<Pair<String, Int>> = emptyList()
 )
 
+const val DEFAULT_COVER_LETTER_STYLE = "professional"
+
 class FlowViewModel(app: Application) : AndroidViewModel(app) {
     private val _state = MutableStateFlow(FlowUiState())
     val state: StateFlow<FlowUiState> = _state.asStateFlow()
@@ -350,14 +352,14 @@ class FlowViewModel(app: Application) : AndroidViewModel(app) {
         }
     }
 
-    fun regenerateCoverLetter() {
+    fun regenerateCoverLetter(style: String = DEFAULT_COVER_LETTER_STYLE) {
         val s = _state.value
         if (s.resumeText.isBlank() || s.jdText.isBlank()) return
         
         viewModelScope.launch {
             _state.update { it.copy(phase = FlowPhase.LOADING, progressStep = 4, errorMsg = "") }
             try {
-                val resp = api.generateCoverLetter(OptimizeReq(s.resumeText, s.jdText, null))
+                val resp = api.generateCoverLetter(OptimizeReq(s.resumeText, s.jdText, null, style))
                 if (resp.coverLetter.isBlank()) {
                     _state.update { it.copy(phase = FlowPhase.ERROR, errorMsg = "AI 未能生成求职信") }
                     return@launch

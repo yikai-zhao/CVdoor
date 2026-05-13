@@ -25,6 +25,14 @@ DB_PATH = os.getenv("DB_PATH", "cvdoor.db")
 
 client = OpenAI(api_key=OPENAI_API_KEY)
 
+# Cover letter generation heuristics:
+# - keep enough resume context for personalization without exploding prompt size
+# - ensure final cover letter has at least substantial body length
+MAX_RESUME_CONTEXT_CHARS = 3500
+RESUME_EXCERPT_HEAD_LINES = 10
+RESUME_EXCERPT_TAIL_LINES = 10
+MIN_COVER_LETTER_LENGTH = 180
+
 # ===== SQLite =====
 _db_lock = threading.Lock()
 
@@ -60,6 +68,7 @@ class OptimizeReq(BaseModel):
     resume_text: str
     jd_text: str
     user_id: Optional[str] = None
+    style: Optional[str] = None
 
 class DimAnalysisOut(BaseModel):
     name: str
@@ -162,6 +171,25 @@ SYSTEM_PROMPT = """你是资深 ATS 简历优化专家兼专业求职信撰写�
 def _build_user_msg(resume: str, jd: str) -> str:
     return f"【简历】\n{resume.strip()}\n\n【职位JD】\n{jd.strip()}"
 
+def _normalize_cover_letter_style(style: Optional[str]) -> str:
+    allowed = {"professional", "natural", "brief"}
+    s = (style or "").strip().lower()
+    return s if s in allowed else "professional"
+
+def _resume_focus_excerpt(resume: str, max_chars: int = MAX_RESUME_CONTEXT_CHARS) -> str:
+    text = (resume or "").strip()
+    if len(text) <= max_chars:
+        return text
+    lines = [ln.strip() for ln in text.splitlines() if ln.strip()]
+    if not lines:
+        return text[:max_chars]
+    if len(lines) <= RESUME_EXCERPT_HEAD_LINES + RESUME_EXCERPT_TAIL_LINES:
+        return text[:max_chars]
+    head = "\n".join(lines[:RESUME_EXCERPT_HEAD_LINES]).strip()
+    tail = "\n".join(lines[-RESUME_EXCERPT_TAIL_LINES:]).strip()
+    merged = f"{head}\n...\n{tail}".strip()
+    return merged[:max_chars]
+
 def _try_parse_json(text: str):
     try:
         return json.loads(text)
@@ -254,6 +282,10 @@ def _parse_response(obj: dict) -> OptimizeResp:
 
 _BULLET_RE = re.compile(r"^\s*(?:[-*•·▪]|\d+[\).、])\s+")
 _METRIC_RE = re.compile(r"(\d|%|％|x|倍|HK\$|\$|¥|人|名|个|次|小时|天|周|月|年)")
+_PLACEHOLDER_RE = re.compile(
+    r"\[(?:请补充|待补充|待填写|to be filled|tbd|company|position|metric|数字)[\w\s\-:：，,]*\]",
+    re.IGNORECASE
+)
 
 def _lines(text: str):
     return [ln.strip() for ln in (text or "").splitlines() if ln.strip()]
@@ -339,6 +371,23 @@ def _force_quantified_bullets(text: str) -> str:
             out.append(line)
     return "\n".join(out).strip()
 
+def _cover_letter_needs_retry(text: Optional[str]) -> bool:
+    t = (text or "").strip()
+    if len(t) < MIN_COVER_LETTER_LENGTH:
+        return True
+    if _PLACEHOLDER_RE.search(t):
+        return True
+    lowered = t.lower()
+    # 补充兜底：用于识别未被占位符正则覆盖的英文模板残留片段
+    quality_risk_markers = (
+        "lorem ipsum",
+        "tbd",
+        "placeholder",
+    )
+    if any(marker in lowered for marker in quality_risk_markers):
+        return True
+    return False
+
 
 def _call_gpt(resume: str, jd: str) -> dict:
     for use_json_mode in (True, False):
@@ -366,16 +415,18 @@ def _call_gpt(resume: str, jd: str) -> dict:
 
 def _generate_cover_letter_only(resume: str, jd: str, style: str = "professional") -> str:
     """专门生成求职信（用于"重新生成"功能）"""
+    normalized_style = _normalize_cover_letter_style(style)
+    resume_context = _resume_focus_excerpt(resume)
     cover_letter_prompt = f"""你是专业求职信撰写专家。根据以下信息生成一份高质量的英文求职信。
 
-【简历摘要】
-{resume[:500]}...
+【简历】
+{resume_context}
 
 【职位JD】
 {jd}
 
 【风格】
-{style}（可选值：professional=正式版, natural=自然版, brief=简短版）
+{normalized_style}（可选值：professional=正式版, natural=自然版, brief=简短版）
 
 要求：
 1. 250-300词的求职信
@@ -397,7 +448,7 @@ def _generate_cover_letter_only(resume: str, jd: str, style: str = "professional
             try:
                 comp = client.chat.completions.create(**kwargs)
                 cover_letter = (comp.choices[0].message.content or "").strip()
-                if cover_letter and len(cover_letter) > 100:  # 至少有实质内容
+                if len(cover_letter) >= MIN_COVER_LETTER_LENGTH:
                     if DEBUG:
                         print(f"\n=== Cover Letter Generated ===\n{cover_letter[:300]}\n")
                     return cover_letter
@@ -471,15 +522,18 @@ def optimize(body: OptimizeReq):
         resp.optimized = _force_quantified_bullets(resp.optimized)
         resp.analysis = _ensure_quant_actions(resp.analysis)
 
-        # 自动生成 Cover Letter（基于优化后的简历）
-        try:
-            cover_letter = _generate_cover_letter_only(resp.optimized, body.jd_text)
-            if cover_letter and len(cover_letter) > 100:
-                resp.cover_letter = cover_letter
-        except Exception as e:
-            if DEBUG:
-                print(f"Cover letter generation during optimize failed: {e}")
-            # 不中断主流程，Cover Letter 生成失败不影响简历优化结果
+        # 补齐 Cover Letter：优先沿用主调用结果，缺失或质量不足时才补调一次
+        # 仅当 _call_gpt 主调用结果明显缺失或存在模板化/占位痕迹时，才重新生成，避免覆盖已生成的高质量版本。
+        needs_cover_letter_retry = _cover_letter_needs_retry(resp.cover_letter)
+        if needs_cover_letter_retry:
+            try:
+                cover_letter = _generate_cover_letter_only(resp.optimized, body.jd_text, body.style or "professional")
+                if len(cover_letter) >= MIN_COVER_LETTER_LENGTH:
+                    resp.cover_letter = cover_letter
+            except Exception as e:
+                if DEBUG:
+                    print(f"Cover letter generation during optimize failed: {e}")
+                # 不中断主流程，Cover Letter 生成失败不影响简历优化结果
 
         if body.user_id and body.user_id.strip():
             record_id, created_at = _save_record(
@@ -503,7 +557,7 @@ def generate_cover_letter(body: OptimizeReq):
     if not body.resume_text.strip() or not body.jd_text.strip():
         raise HTTPException(status_code=400, detail="resume_text 和 jd_text 不能为空")
     try:
-        cover_letter = _generate_cover_letter_only(body.resume_text, body.jd_text)
+        cover_letter = _generate_cover_letter_only(body.resume_text, body.jd_text, body.style or "professional")
         if not cover_letter:
             raise HTTPException(status_code=500, detail="AI 未能生成求职信")
         return {"cover_letter": cover_letter}
