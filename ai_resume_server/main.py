@@ -272,6 +272,7 @@ def _parse_response(obj: dict) -> OptimizeResp:
 
 _BULLET_RE = re.compile(r"^\s*(?:[-*•·▪]|\d+[\).、])\s+")
 _METRIC_RE = re.compile(r"(\d|%|％|x|倍|HK\$|\$|¥|人|名|个|次|小时|天|周|月|年)")
+_PLACEHOLDER_RE = re.compile(r"\[[^\]]{1,60}\]")
 
 def _lines(text: str):
     return [ln.strip() for ln in (text or "").splitlines() if ln.strip()]
@@ -356,6 +357,25 @@ def _force_quantified_bullets(text: str) -> str:
         else:
             out.append(line)
     return "\n".join(out).strip()
+
+def _cover_letter_needs_retry(text: Optional[str]) -> bool:
+    t = (text or "").strip()
+    if len(t) < 180:
+        return True
+    if _PLACEHOLDER_RE.search(t):
+        return True
+    lowered = t.lower()
+    quality_risk_markers = (
+        "lorem ipsum",
+        "[company",
+        "[position",
+        "to be filled",
+        "tbd",
+        "xxx",
+    )
+    if any(marker in lowered for marker in quality_risk_markers):
+        return True
+    return t.endswith("...")
 
 
 def _call_gpt(resume: str, jd: str) -> dict:
@@ -492,12 +512,8 @@ def optimize(body: OptimizeReq):
         resp.analysis = _ensure_quant_actions(resp.analysis)
 
         # 补齐 Cover Letter：优先沿用主调用结果，缺失或质量不足时才补调一次
-        existing_letter = (resp.cover_letter or "").strip()
-        needs_cover_letter_retry = (
-            len(existing_letter) < 180
-            or "[" in existing_letter
-            or "..." in existing_letter
-        )
+        # 仅当主调用结果明显缺失或存在模板化/占位痕迹时，才进行补调，避免覆盖掉已生成的高质量版本。
+        needs_cover_letter_retry = _cover_letter_needs_retry(resp.cover_letter)
         if needs_cover_letter_retry:
             try:
                 cover_letter = _generate_cover_letter_only(resp.optimized, body.jd_text, body.style or "professional")
