@@ -398,6 +398,17 @@ class FlowViewModel(app: Application) : AndroidViewModel(app) {
                 stepJob.cancel()
                 for (i in 4..5) { _state.update { it.copy(progressStep = i) }; delay(400) }
 
+                // ── Validate AI response ──────────────────────────────────────
+                if (resp.optimized.isBlank()) {
+                    _state.update { it.copy(phase = FlowPhase.ERROR, errorMsg = "AI 未返回优化简历，请重试") }
+                    return@launch
+                }
+                if (resp.optimized.length < 50) {
+                    _state.update { it.copy(phase = FlowPhase.ERROR, errorMsg = "AI 返回内容过短，请重试") }
+                    return@launch
+                }
+                val safeScore = resp.afterTotal.coerceIn(0, 100)
+
                 val analysis = resp.analysis
                 val matched = resp.addedKeywords.orEmpty()
                 val missing = analysis?.dimensions?.flatMap { it.missingBefore.orEmpty() }
@@ -421,14 +432,14 @@ class FlowViewModel(app: Application) : AndroidViewModel(app) {
                 s.savedResumeId?.let { db.savedResumeDao().incrementAndUpdateMeta(it, s.industry, s.targetRole) }
 
                 val scoreLabel = when {
-                    resp.afterTotal >= 85 -> "ATS 友好度：High"
-                    resp.afterTotal >= 70 -> "ATS 友好度：Medium"
+                    safeScore >= 85 -> "ATS 友好度：High"
+                    safeScore >= 70 -> "ATS 友好度：Medium"
                     else -> "ATS 友好度：Low — 需改进"
                 }
                 _state.update {
                     it.copy(
                         phase = FlowPhase.SUCCESS,
-                        result = FlowResult(resp.optimized, coverLetter, resp.afterTotal, scoreLabel,
+                        result = FlowResult(resp.optimized, coverLetter, safeScore, scoreLabel,
                             matched, emptyList(), missing, suggestions, atsIssues, atsOk, dimScores),
                         editedCoverLetter = coverLetter
                     )

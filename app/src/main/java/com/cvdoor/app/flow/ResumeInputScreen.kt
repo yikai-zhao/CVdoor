@@ -3,6 +3,7 @@ package com.cvdoor.app.flow
 import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.material.icons.outlined.ErrorOutline
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -37,9 +38,9 @@ fun ResumeInputScreen(
     val ctx = LocalContext.current
     val scroll = rememberScrollState()
 
-    // File picker launcher
+    // File picker launcher – restricted to PDF / DOCX / DOC
     val launcher = rememberLauncherForActivityResult(
-        ActivityResultContracts.GetContent()
+        ActivityResultContracts.OpenDocument()
     ) { uri: Uri? ->
         if (uri != null) {
             val name = resolveFileName(ctx, uri)
@@ -100,7 +101,7 @@ fun ResumeInputScreen(
                             RoundedCornerShape(16.dp)
                         )
                         .background(NightElevated)
-                        .clickable { launcher.launch("*/*") },
+                        .clickable { launcher.launch(RESUME_MIME_TYPES) },
                     contentAlignment = Alignment.Center
                 ) {
                     Row(
@@ -150,7 +151,7 @@ fun ResumeInputScreen(
                             )
                         }
                         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                            TextButton(onClick = { launcher.launch("*/*") }) {
+                            TextButton(onClick = { launcher.launch(RESUME_MIME_TYPES) }) {
                                 Text("重新上传", color = NeonBlueEnd, fontSize = 13.sp)
                             }
                             IconButton(onClick = { vm.clearResumeFile() }) {
@@ -163,6 +164,33 @@ fun ResumeInputScreen(
                             }
                         }
                     }
+                }
+            }
+
+            // File read error banner
+            if (state.errorMsg.isNotBlank() && state.resumeFileName.isBlank() && state.resumeText.isBlank()) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clip(RoundedCornerShape(12.dp))
+                        .background(Color(0xFF3A1A1A))
+                        .border(1.dp, Color(0xFFE57373).copy(0.5f), RoundedCornerShape(12.dp))
+                        .padding(12.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    Icon(
+                        Icons.Outlined.ErrorOutline,
+                        contentDescription = null,
+                        tint = Color(0xFFE57373),
+                        modifier = Modifier.size(18.dp)
+                    )
+                    Text(
+                        state.errorMsg,
+                        fontSize = 13.sp,
+                        color = Color(0xFFE57373),
+                        modifier = Modifier.weight(1f)
+                    )
                 }
             }
 
@@ -261,6 +289,12 @@ fun ResumeInputScreen(
         }
     }
 }
+
+private val RESUME_MIME_TYPES = arrayOf(
+    "application/pdf",
+    "application/msword",
+    "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+)
 
 private fun resolveFileName(ctx: android.content.Context, uri: Uri): String {
     return try {
