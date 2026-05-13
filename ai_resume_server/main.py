@@ -381,6 +381,9 @@ def _cover_letter_needs_retry(text: Optional[str]) -> bool:
     quality_risk_markers = (
         "lorem ipsum",
         "tbd",
+        "placeholder",
+        "example",
+        "sample",
     )
     if any(marker in lowered for marker in quality_risk_markers):
         return True
@@ -446,7 +449,7 @@ def _generate_cover_letter_only(resume: str, jd: str, style: str = "professional
             try:
                 comp = client.chat.completions.create(**kwargs)
                 cover_letter = (comp.choices[0].message.content or "").strip()
-                if cover_letter and len(cover_letter) >= MIN_COVER_LETTER_LENGTH:
+                if len(cover_letter) >= MIN_COVER_LETTER_LENGTH:
                     if DEBUG:
                         print(f"\n=== Cover Letter Generated ===\n{cover_letter[:300]}\n")
                     return cover_letter
@@ -526,7 +529,7 @@ def optimize(body: OptimizeReq):
         if needs_cover_letter_retry:
             try:
                 cover_letter = _generate_cover_letter_only(resp.optimized, body.jd_text, body.style or "professional")
-                if cover_letter and len(cover_letter) >= MIN_COVER_LETTER_LENGTH:
+                if len(cover_letter) >= MIN_COVER_LETTER_LENGTH:
                     resp.cover_letter = cover_letter
             except Exception as e:
                 if DEBUG:

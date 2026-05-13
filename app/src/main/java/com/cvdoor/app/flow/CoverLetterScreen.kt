@@ -48,7 +48,7 @@ fun CoverLetterScreen(
     var isRegenerating by remember { mutableStateOf(false) }
     var regenerateError by remember { mutableStateOf("") }
 
-    LaunchedEffect(state.phase, state.errorMsg) {
+    LaunchedEffect(state.phase) {
         if (isRegenerating && state.phase != FlowPhase.LOADING) {
             isRegenerating = false
             regenerateError = if (state.phase == FlowPhase.ERROR) {
