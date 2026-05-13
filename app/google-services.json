@@ -1,0 +1,47 @@
+{
+  "project_info": {
+    "project_number": "309989644542",
+    "project_id": "cvdoor-65c53",
+    "storage_bucket": "cvdoor-65c53.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:309989644542:android:554de2f8d6e785606f2daf",
+        "android_client_info": {
+          "package_name": "com.cvdoor.app"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "309989644542-pa0dmecm52fbidvdmi97qh8u1ncs5p57.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.cvdoor.app",
+            "certificate_hash": "d24bc76764fca06f9373731049eb8e1e12e0010e"
+          }
+        },
+        {
+          "client_id": "309989644542-n58nhv0f7ftahqgome6lvfpovfhl4hhi.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDKTzq0ftBPKXTSO5__yMqwJnN3DH-RJaA"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "309989644542-n58nhv0f7ftahqgome6lvfpovfhl4hhi.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

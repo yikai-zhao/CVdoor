@@ -1,0 +1,10 @@
+.gradle/
+local.properties
+*.keystore
+*.jks
+app-release-signed.apk
+ai_resume_server/.env
+**/build/
+.idea/
+*.iml
+.DS_Store

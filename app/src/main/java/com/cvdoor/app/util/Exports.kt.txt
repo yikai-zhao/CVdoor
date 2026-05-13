@@ -1,0 +1,41 @@
+package com.cvats.app.util
+
+import android.content.Context
+import android.net.Uri
+import android.print.PrintAttributes
+import android.print.PrintManager
+import android.webkit.WebView
+import android.webkit.WebViewClient
+
+fun saveText(ctx: Context, uri: Uri, content: String) {
+    ctx.contentResolver.openOutputStream(uri)?.use { it.write(content.toByteArray()) }
+}
+
+fun buildHtml(title: String, body: String) = """
+<!doctype html><html><head><meta charset="utf-8">
+<style>
+body{font-family: -apple-system, Roboto, "Segoe UI", Noto Sans, sans-serif;line-height:1.6;padding:24px;}
+h1{font-size:20px;margin:0 0 12px}
+pre{white-space:pre-wrap}
+mark{background:#fff59d}
+</style></head>
+<body><h1>$title</h1><pre>$body</pre></body></html>
+""".trimIndent()
+
+fun printHtmlToPdf(ctx: Context, jobName: String, html: String) {
+    val web = WebView(ctx)
+    web.settings.javaScriptEnabled = false
+    web.loadDataWithBaseURL(null, html, "text/html", "utf-8", null)
+    web.webViewClient = object : WebViewClient() {
+        override fun onPageFinished(view: WebView?, url: String?) {
+            val pm = ctx.getSystemService(Context.PRINT_SERVICE) as PrintManager
+            val adapter = web.createPrintDocumentAdapter(jobName)
+            val attrs = PrintAttributes.Builder()
+                .setMediaSize(PrintAttributes.MediaSize.ISO_A4)
+                .setResolution(PrintAttributes.Resolution("id","id",300,300))
+                .setMinMargins(PrintAttributes.Margins.NO_MARGINS)
+                .build()
+            pm.print(jobName, adapter, attrs)
+        }
+    }
+}

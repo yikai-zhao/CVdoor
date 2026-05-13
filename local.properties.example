@@ -1,0 +1,8 @@
+# Copy this file to local.properties and set your Android SDK path.
+# Example: sdk.dir=/home/yourname/Android/Sdk
+sdk.dir=/path/to/Android/Sdk
+
+# Optional: enable live AI optimizer.
+# Keep trailing slash for base URL.
+CVDOOR_API_BASE_URL=https://api.yourdomain.com/
+CVDOOR_API_KEY=replace_with_your_api_key

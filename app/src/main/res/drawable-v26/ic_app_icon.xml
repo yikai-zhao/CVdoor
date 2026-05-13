@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Android 8+ adaptive icon version of ic_app_icon -->
+<adaptive-icon xmlns:android="http://schemas.android.com/apk/res/android">
+    <background android:drawable="@color/ic_app_icon_bg" />
+    <foreground android:drawable="@drawable/ic_app_icon_fg" />
+</adaptive-icon>
