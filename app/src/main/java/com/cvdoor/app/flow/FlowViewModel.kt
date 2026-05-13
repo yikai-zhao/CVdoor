@@ -66,6 +66,7 @@ data class FlowResult(
 )
 
 const val DEFAULT_COVER_LETTER_STYLE = "professional"
+private const val MIN_OPTIMIZED_RESUME_LENGTH = 50
 
 class FlowViewModel(app: Application) : AndroidViewModel(app) {
     private val _state = MutableStateFlow(FlowUiState())
@@ -403,7 +404,7 @@ class FlowViewModel(app: Application) : AndroidViewModel(app) {
                     _state.update { it.copy(phase = FlowPhase.ERROR, errorMsg = "AI 未返回优化简历，请重试") }
                     return@launch
                 }
-                if (resp.optimized.length < 50) {
+                if (resp.optimized.length < MIN_OPTIMIZED_RESUME_LENGTH) {
                     _state.update { it.copy(phase = FlowPhase.ERROR, errorMsg = "AI 返回内容过短，请重试") }
                     return@launch
                 }

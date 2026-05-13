@@ -168,7 +168,10 @@ fun ResumeInputScreen(
             }
 
             // File read error banner
-            if (state.errorMsg.isNotBlank() && state.resumeFileName.isBlank() && state.resumeText.isBlank()) {
+            val showFileErrorBanner = state.errorMsg.isNotBlank()
+                && state.resumeFileName.isBlank()
+                && state.resumeText.isBlank()
+            if (showFileErrorBanner) {
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
