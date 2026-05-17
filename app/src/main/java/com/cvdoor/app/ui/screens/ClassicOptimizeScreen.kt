@@ -180,7 +180,7 @@ fun ClassicOptimizeScreen(
                                         progress = 1f
                                         phaseIndex = phases.lastIndex
                                         working = false
-                                        onSaved(rec.id)     // ✅ 直接跳详情
+                                        onSaved(rec.id)     // ✅ 直接跳詳情
                                     },
                                     onError = { e ->
                                         working = false
@@ -199,7 +199,7 @@ fun ClassicOptimizeScreen(
                 }
             )
 
-            // 优化中遮罩
+            // 優化中遮罩
             AnimatedVisibility(
                 visible = working,
                 enter = fadeIn(),
@@ -248,7 +248,7 @@ private fun OptimizingOverlay(
                 Text(phase, color = TextSecondary, fontSize = 14.sp)
 
                 CircularProgressIndicator(modifier = Modifier.size(36.dp))
-                // ✅ Material3 新签名：progress 传 lambda
+                // ✅ Material3 新簽名：progress 傳 lambda
                 LinearProgressIndicator(
                     progress = { progress.coerceIn(0f, 1f) },
                     modifier = Modifier

@@ -2,7 +2,7 @@ package com.cvdoor.app.score
 
 import kotlin.math.roundToInt
 
-// 六维评分数据模型（0~100）
+// 六維評分數據模型（0~100）
 data class ScoreBreakdown(
     val format: Int,
     val keywords: Int,
@@ -23,7 +23,7 @@ data class ScoreBreakdown(
         }
 }
 
-// 本地 mock：先固定分数让 UI 跑起来
+// 本地 mock：先固定分數讓 UI 跑起來
 object LocalMockScorer {
     fun before(resume: String, jd: String): ScoreBreakdown =
         ScoreBreakdown(

@@ -350,7 +350,7 @@ fun CVATSApp() {
     }
 }
 
-/* ------- PDF 导出函数保留 ------- */
+/* ------- PDF 導出函數保留 ------- */
 
 private data class ExportPayload(
     val company: String,

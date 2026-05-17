@@ -19,13 +19,13 @@ class AppVM(app: Application) : AndroidViewModel(app) {
     private val api by lazy { ApiService.create() }
     private val auth = AuthDataStore(app)
 
-    // 登录信息
+    // 登錄信息
     val uid: StateFlow<String?> =
         auth.uid.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), null)
     val displayName: StateFlow<String?> =
         auth.displayName.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), null)
 
-    // 历史与次数
+    // 歷史與次數
     private val _history = MutableStateFlow<List<OptimizationRecord>>(emptyList())
     val history: StateFlow<List<OptimizationRecord>> = _history
 
@@ -41,7 +41,7 @@ class AppVM(app: Application) : AndroidViewModel(app) {
                 } else {
                     repo.ensureAccount(u)
                     repo.getAccount(u)?.let { _credits.value = it.remainingCredits }
-                    // ✅ 持续观察数据库里的记录
+                    // ✅ 持續觀察數據庫裏的記錄
                     repo.observeHistory(u).collect { _history.value = it }
                 }
             }
@@ -63,7 +63,7 @@ class AppVM(app: Application) : AndroidViewModel(app) {
         return true
     }
 
-    /** 真·登出：退出 Google + 撤销授权 + 清空本地状态 */
+    /** 真·登出：退出 Google + 撤銷授權 + 清空本地狀態 */
     fun logout() = viewModelScope.launch {
         try {
             val gso = GoogleSignInOptions
@@ -87,10 +87,10 @@ class AppVM(app: Application) : AndroidViewModel(app) {
     ) {
         viewModelScope.launch {
             try {
-                val u = uid.value ?: throw IllegalStateException("尚未登录")
-                if (!consumeOne()) throw IllegalStateException("剩余次数不足")
+                val u = uid.value ?: throw IllegalStateException("尚未登錄")
+                if (!consumeOne()) throw IllegalStateException("剩餘次數不足")
 
-                // 评分 & 优化
+                // 評分 & 優化
                 val before = LocalMockScorer.before(resumeText, jdText)
                 val optimizedText = api.optimize(OptimizeReq(resumeText, jdText)).optimized
                 val after = LocalMockScorer.after(optimizedText, jdText)
@@ -115,7 +115,7 @@ class AppVM(app: Application) : AndroidViewModel(app) {
                 )
 
                 val id = repo.saveRecord(rec)
-                // ❌ 不再手动改 _history
+                // ❌ 不再手動改 _history
                 onDone(rec.copy(id = id))
             } catch (t: Throwable) {
                 onError(t)
@@ -123,17 +123,17 @@ class AppVM(app: Application) : AndroidViewModel(app) {
         }
     }
 
-    /** ✅ 删除单条记录（依赖 Room Flow 自动更新） */
+    /** ✅ 刪除單條記錄（依賴 Room Flow 自動更新） */
     fun deleteRecord(recordId: Long) = viewModelScope.launch {
         val u = uid.value ?: return@launch
         repo.deleteRecord(u, recordId)
-        // ❌ 不再手动改 _history，等待 Room 推送新数据
+        // ❌ 不再手動改 _history，等待 Room 推送新數據
     }
 
-    /** ✅ 清空历史（依赖 Room Flow 自动更新） */
+    /** ✅ 清空歷史（依賴 Room Flow 自動更新） */
     fun clearHistory() = viewModelScope.launch {
         val u = uid.value ?: return@launch
         repo.clearHistory(u)
-        // ❌ 不再手动改 _history
+        // ❌ 不再手動改 _history
     }
 }

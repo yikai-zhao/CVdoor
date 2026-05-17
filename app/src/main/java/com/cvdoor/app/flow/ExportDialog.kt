@@ -46,12 +46,12 @@ fun ExportConfirmDialog(
 
     AlertDialog(
         onDismissRequest = onDismiss,
-        title = { Text(if (hasUnfilledData) "导出前确认" else "导出确认", color = TextPrimary) },
+        title = { Text(if (hasUnfilledData) "導出前確認" else "導出確認", color = TextPrimary) },
         text = {
             Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
                 Text(
-                    if (hasUnfilledData) "检测到未填写真实数据或占位符。"
-                    else "确认导出当前版本？",
+                    if (hasUnfilledData) "檢測到未填寫真實數據或佔位符。"
+                    else "確認導出當前版本？",
                     fontSize = 13.sp,
                     color = TextSecondary
                 )
@@ -78,31 +78,31 @@ fun ExportConfirmDialog(
                             .padding(10.dp),
                         verticalArrangement = Arrangement.spacedBy(4.dp)
                     ) {
-                        Text("未填写项处理", fontSize = 13.sp, color = TextPrimary, fontWeight = FontWeight.SemiBold)
+                        Text("未填寫項處理", fontSize = 13.sp, color = TextPrimary, fontWeight = FontWeight.SemiBold)
 
                         Row(verticalAlignment = Alignment.CenterVertically) {
                             RadioButton(
                                 selected = selectedHandling == UnfilledHandling.GO_FILL,
                                 onClick = { selectedHandling = UnfilledHandling.GO_FILL })
-                            Text("去填写后导出", color = TextPrimary)
+                            Text("去填寫後導出", color = TextPrimary)
                         }
                         Row(verticalAlignment = Alignment.CenterVertically) {
                             RadioButton(
                                 selected = selectedHandling == UnfilledHandling.REMOVE_AND_EXPORT,
                                 onClick = { selectedHandling = UnfilledHandling.REMOVE_AND_EXPORT })
-                            Text("删除未填写建议并导出", color = TextPrimary)
+                            Text("刪除未填寫建議並導出", color = TextPrimary)
                         }
                         Row(verticalAlignment = Alignment.CenterVertically) {
                             RadioButton(
                                 selected = selectedHandling == UnfilledHandling.EXPORT_AS_IS,
                                 onClick = { selectedHandling = UnfilledHandling.EXPORT_AS_IS })
-                            Text("导出普通优化版", color = TextPrimary)
+                            Text("導出普通優化版", color = TextPrimary)
                         }
                     }
 
                     if (selectedHandling == UnfilledHandling.GO_FILL && onGoFillData != null) {
                         OutlinedButton(onClick = onGoFillData, modifier = Modifier.fillMaxWidth()) {
-                            Text("去填写数据", color = AccentBlue)
+                            Text("去填寫數據", color = AccentBlue)
                         }
                     }
                 }
@@ -112,7 +112,7 @@ fun ExportConfirmDialog(
         },
         confirmButton = {
             TextButton(onClick = { onConfirm(selectedFormat, selectedHandling) }) {
-                Text("确认导出")
+                Text("確認導出")
             }
         },
         dismissButton = {

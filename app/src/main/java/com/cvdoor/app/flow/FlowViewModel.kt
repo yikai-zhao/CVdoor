@@ -362,7 +362,7 @@ class FlowViewModel(app: Application) : AndroidViewModel(app) {
             try {
                 val resp = api.generateCoverLetter(OptimizeReq(s.resumeText, s.jdText, null, style))
                 if (resp.coverLetter.isBlank()) {
-                    _state.update { it.copy(phase = FlowPhase.ERROR, errorMsg = "AI 未能生成求职信") }
+                    _state.update { it.copy(phase = FlowPhase.ERROR, errorMsg = "AI 未能生成求職信") }
                     return@launch
                 }
                 _state.update { current ->
@@ -376,9 +376,9 @@ class FlowViewModel(app: Application) : AndroidViewModel(app) {
                 }
             } catch (e: Exception) {
                 val msg = when {
-                    e.message?.contains("timeout", true) == true -> "请求超时，请重试"
-                    e.message?.contains("Unable to resolve host", true) == true -> "网络不可用"
-                    else -> e.message ?: "求职信生成失败，请重试"
+                    e.message?.contains("timeout", true) == true -> "請求超時，請重試"
+                    e.message?.contains("Unable to resolve host", true) == true -> "網絡不可用"
+                    else -> e.message ?: "求職信生成失敗，請重試"
                 }
                 _state.update { it.copy(phase = FlowPhase.ERROR, errorMsg = msg) }
             }
@@ -401,11 +401,11 @@ class FlowViewModel(app: Application) : AndroidViewModel(app) {
 
                 // ── Validate AI response ──────────────────────────────────────
                 if (resp.optimized.isBlank()) {
-                    _state.update { it.copy(phase = FlowPhase.ERROR, errorMsg = "AI 未返回优化简历，请重试") }
+                    _state.update { it.copy(phase = FlowPhase.ERROR, errorMsg = "AI 未返回優化簡歷，請重試") }
                     return@launch
                 }
                 if (resp.optimized.length < MIN_OPTIMIZED_RESUME_LENGTH) {
-                    _state.update { it.copy(phase = FlowPhase.ERROR, errorMsg = "AI 返回内容过短，请重试") }
+                    _state.update { it.copy(phase = FlowPhase.ERROR, errorMsg = "AI 返回內容過短，請重試") }
                     return@launch
                 }
                 val safeScore = resp.afterTotal.coerceIn(0, 100)
@@ -415,27 +415,27 @@ class FlowViewModel(app: Application) : AndroidViewModel(app) {
                 val missing = analysis?.dimensions?.flatMap { it.missingBefore.orEmpty() }
                     ?.distinct()?.take(10) ?: emptyList()
                 val suggestions = analysis?.overall?.actions?.take(4)
-                    ?: listOf("增加与JD相关的关键词", "强化成果量化表达", "补充岗位要求中的核心技能")
+                    ?: listOf("增加與JD相關的關鍵詞", "強化成果量化表達", "補充崗位要求中的核心技能")
                 
-                // 使用后端返回的 cover_letter（真实 AI 生成）
+                // 使用後端返回的 cover_letter（真實 AI 生成）
                 val coverLetter = resp.coverLetter?.takeIf { it.isNotBlank() }
-                    ?: "无法生成求职信，请重试"
+                    ?: "無法生成求職信，請重試"
                 
                 val dimScores = analysis?.dimensions?.mapNotNull { d ->
                     if (d.name != null && d.after != null) d.name to d.after else null
                 } ?: emptyList()
-                val atsOk = mutableListOf("使用标准 Section 标题", "无复杂图表/表格", "关键词可被 ATS 读取")
+                val atsOk = mutableListOf("使用標準 Section 標題", "無複雜圖表/表格", "關鍵詞可被 ATS 讀取")
                 val atsIssues = mutableListOf<String>()
                 val longBullets = resp.optimized.lines().count { it.startsWith("•") && it.length > 120 }
-                if (longBullets > 0) atsIssues.add("$longBullets 条 bullet 过长，建议精简")
-                if (resp.optimized.contains("[")) atsIssues.add("检测到未填写的占位符，请填写真实数据")
+                if (longBullets > 0) atsIssues.add("$longBullets 條 bullet 過長，建議精簡")
+                if (resp.optimized.contains("[")) atsIssues.add("檢測到未填寫的佔位符，請填寫真實數據")
 
                 s.savedResumeId?.let { db.savedResumeDao().incrementAndUpdateMeta(it, s.industry, s.targetRole) }
 
                 val scoreLabel = when {
                     safeScore >= 85 -> "ATS 友好度：High"
                     safeScore >= 70 -> "ATS 友好度：Medium"
-                    else -> "ATS 友好度：Low — 需改进"
+                    else -> "ATS 友好度：Low — 需改進"
                 }
                 _state.update {
                     it.copy(
@@ -448,9 +448,9 @@ class FlowViewModel(app: Application) : AndroidViewModel(app) {
             } catch (e: Exception) {
                 stepJob.cancel()
                 val msg = when {
-                    e.message?.contains("timeout", true) == true -> "请求超时，请重试"
-                    e.message?.contains("Unable to resolve host", true) == true -> "网络不可用"
-                    else -> e.message ?: "生成失败，请重试"
+                    e.message?.contains("timeout", true) == true -> "請求超時，請重試"
+                    e.message?.contains("Unable to resolve host", true) == true -> "網絡不可用"
+                    else -> e.message ?: "生成失敗，請重試"
                 }
                 _state.update { it.copy(phase = FlowPhase.ERROR, errorMsg = msg) }
             }

@@ -78,7 +78,7 @@ fun ResumeInputScreen(
                     )
                 }
                 Text(
-                    "添加你的简历",
+                    "添加你的簡歷",
                     fontSize = 20.sp,
                     fontWeight = FontWeight.SemiBold,
                     color = TextPrimary,
@@ -115,7 +115,7 @@ fun ResumeInputScreen(
                             modifier = Modifier.size(22.dp)
                         )
                         Text(
-                            "上传 PDF / DOCX",
+                            "上傳 PDF / DOCX",
                             color = NeonBlueEnd,
                             fontWeight = FontWeight.Medium,
                             fontSize = 15.sp
@@ -139,7 +139,7 @@ fun ResumeInputScreen(
                     ) {
                         Column {
                             Text(
-                                "已上传文件",
+                                "已上傳文件",
                                 fontSize = 12.sp,
                                 color = TextSecondary
                             )
@@ -152,7 +152,7 @@ fun ResumeInputScreen(
                         }
                         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                             TextButton(onClick = { launcher.launch(RESUME_MIME_TYPES) }) {
-                                Text("重新上传", color = NeonBlueEnd, fontSize = 13.sp)
+                                Text("重新上傳", color = NeonBlueEnd, fontSize = 13.sp)
                             }
                             IconButton(onClick = { vm.clearResumeFile() }) {
                                 Icon(
@@ -216,7 +216,7 @@ fun ResumeInputScreen(
                     .heightIn(min = 200.dp),
                 placeholder = {
                     Text(
-                        "请粘贴你的简历内容…",
+                        "請粘貼你的簡歷內容…",
                         color = TextSecondary.copy(0.5f),
                         fontSize = 14.sp
                     )
@@ -240,7 +240,7 @@ fun ResumeInputScreen(
 
             // Privacy notice
             Text(
-                "🔒 你的数据不会被存储",
+                "🔒 你的數據不會被存儲",
                 fontSize = 12.sp,
                 color = TextSecondary.copy(0.6f),
                 modifier = Modifier.fillMaxWidth()
@@ -273,7 +273,7 @@ fun ResumeInputScreen(
                         contentAlignment = Alignment.Center
                     ) {
                         Text(
-                            "下一步：添加岗位JD",
+                            "下一步：添加崗位JD",
                             fontSize = 16.sp,
                             fontWeight = FontWeight.SemiBold,
                             color = Color.White
@@ -281,7 +281,7 @@ fun ResumeInputScreen(
                     }
                 } else {
                     Text(
-                        "下一步：添加岗位JD",
+                        "下一步：添加崗位JD",
                         fontSize = 16.sp,
                         color = TextSecondary.copy(0.4f)
                     )

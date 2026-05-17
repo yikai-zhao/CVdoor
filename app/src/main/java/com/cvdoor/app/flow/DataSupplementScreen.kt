@@ -53,26 +53,26 @@ fun DataSupplementScreen(
             IconButton(onClick = onBack) {
                 Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back", tint = TextPrimary)
             }
-            Text("补充真实数据", color = TextPrimary, fontSize = 18.sp, fontWeight = FontWeight.SemiBold)
+            Text("補充真實數據", color = TextPrimary, fontSize = 18.sp, fontWeight = FontWeight.SemiBold)
         }
 
         Column(
             modifier = Modifier.weight(1f).verticalScroll(rememberScrollState()).padding(horizontal = 16.dp),
             verticalArrangement = Arrangement.spacedBy(10.dp)
         ) {
-            Text("请仅填写真实且可验证的数据。", color = TextSecondary, fontSize = 13.sp)
+            Text("請僅填寫真實且可驗證的數據。", color = TextSecondary, fontSize = 13.sp)
 
-            DataField("每日照顾儿童数量", childrenCount) { childrenCount = it }
-            DataField("每周课堂活动次数", classPerWeek) { classPerWeek = it }
-            DataField("准备教学材料数量", materials) { materials = it }
-            DataField("家长沟通频率", parentComm) { parentComm = it }
+            DataField("每日照顧兒童數量", childrenCount) { childrenCount = it }
+            DataField("每週課堂活動次數", classPerWeek) { classPerWeek = it }
+            DataField("準備教學材料數量", materials) { materials = it }
+            DataField("家長溝通頻率", parentComm) { parentComm = it }
 
             Spacer(Modifier.weight(1f))
             Button(onClick = onSaveAndApply, modifier = Modifier.fillMaxWidth()) {
-                Text("保存并更新简历")
+                Text("保存並更新簡歷")
             }
             Button(onClick = onSkip, modifier = Modifier.fillMaxWidth()) {
-                Text("暂不填写，保留普通优化版")
+                Text("暫不填寫，保留普通優化版")
             }
             Spacer(Modifier.padding(bottom = 12.dp))
         }

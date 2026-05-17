@@ -201,9 +201,9 @@ fun RecordDetailsScreen(
     }
 }
 
-/* ---------- 图例 & 维度条 ---------- */
+/* ---------- 圖例 & 維度條 ---------- */
 
-@Composable private fun LegendRow() { /* 与你现有一致，省略… */
+@Composable private fun LegendRow() { /* 與你現有一致，省略… */
     Row(
         modifier = Modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.spacedBy(16.dp),
@@ -228,8 +228,8 @@ fun RecordDetailsScreen(
     }
 }
 
-/* ---------- 导出 Optimized 为 PDF ---------- */
-// 与你现有一致，保留
+/* ---------- 導出 Optimized 爲 PDF ---------- */
+// 與你現有一致，保留
 private fun exportOptimizedToPdf(context: Context, optimized: String) {
     val doc = PdfDocument()
     val pageInfo = PdfDocument.PageInfo.Builder(595, 842, 1).create()

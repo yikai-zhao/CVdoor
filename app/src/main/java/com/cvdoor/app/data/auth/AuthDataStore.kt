@@ -23,7 +23,7 @@ class AuthDataStore(private val context: Context) {
     suspend fun getUidNow(): String? =
         context.dataStore.data.first()[Keys.UID]
 
-    /** 确保有一个 UID：优先返回已有的，否则生成 guest-xxxx 并持久化 */
+    /** 確保有一個 UID：優先返回已有的，否則生成 guest-xxxx 並持久化 */
     suspend fun ensureGuest(): String {
         val existing = getUidNow()
         if (!existing.isNullOrBlank()) return existing

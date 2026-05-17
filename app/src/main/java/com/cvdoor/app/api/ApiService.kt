@@ -20,7 +20,7 @@ data class OptimizeReq(
     @Json(name = "style") val style: String? = null
 )
 
-/* ===================== Analysis DTO（来自后端） ===================== */
+/* ===================== Analysis DTO（來自後端） ===================== */
 
 data class DimAnalysisDTO(
     val name: String? = null,
@@ -55,20 +55,20 @@ data class OptimizeResp(
     @Json(name = "dims_before") val dimsBefore: List<Int>?,
     @Json(name = "dims_after")  val dimsAfter:  List<Int>?,
 
-    // 兼容旧字段
+    // 兼容舊字段
     @Json(name = "before_scores") val beforeScores: List<Int>? = null,
     @Json(name = "after_scores")  val afterScores:  List<Int>? = null,
 
     @Json(name = "match_score") val matchScore: Int? = null,
     @Json(name = "added_keywords") val addedKeywords: List<String>? = emptyList(),
 
-    // Cover letter - 真实 AI 生成
+    // Cover letter - 真實 AI 生成
     @Json(name = "cover_letter") val coverLetter: String? = null,
 
     // 新增：分析
     val analysis: AnalysisDTO? = null,
 
-    // 服务端已落库
+    // 服務端已落庫
     @Json(name = "record_id") val recordId: Long? = null,
     @Json(name = "created_at") val createdAtSec: Long? = null
 )
@@ -119,10 +119,10 @@ interface ApiService {
     suspend fun deleteRecord(
         @Path("id") id: Long,
         @Query("user_id") userId: String
-    ): Response<Unit>   // ✅ 修复
+    ): Response<Unit>   // ✅ 修復
 
     @POST("/v1/records/clear")
-    suspend fun clearRecords(@Query("user_id") userId: String): Response<Unit>  // ✅ 修复
+    suspend fun clearRecords(@Query("user_id") userId: String): Response<Unit>  // ✅ 修復
 
     companion object {
         fun create(): ApiService {

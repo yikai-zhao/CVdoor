@@ -11,12 +11,12 @@ data class IndustryDef(
 
 object IndustryData {
 
-    val regions = listOf("香港", "加拿大", "英国", "美国", "新加坡", "澳大利亚")
+    val regions = listOf("香港", "加拿大", "英國", "美國", "新加坡", "澳大利亞")
 
     val industries: List<IndustryDef> = listOf(
         IndustryDef(
             id = "education",
-            displayName = "教育 / 幼儿教育",
+            displayName = "教育 / 幼兒教育",
             sampleKeywords = listOf(
                 "Classroom Support", "Child Development", "Behavior Management",
                 "Teaching Materials", "Communication Skills", "Team Collaboration"
@@ -28,11 +28,11 @@ object IndustryData {
                 "English-Chinese Bilingual", "Phonics", "Circle Time",
                 "Emotional Intelligence", "Safeguarding", "EYFS Framework"
             ),
-            suggestedRoles = listOf("幼稚园教学助理", "课程设计员", "教学支援人员", "幼儿教育教师")
+            suggestedRoles = listOf("幼稚園教學助理", "課程設計員", "教學支援人員", "幼兒教育教師")
         ),
         IndustryDef(
             id = "data_it",
-            displayName = "数据 / IT",
+            displayName = "數據 / IT",
             sampleKeywords = listOf(
                 "SQL", "Python", "Data Pipeline", "Dashboard", "Data Modeling", "Cloud"
             ),
@@ -46,7 +46,7 @@ object IndustryData {
         ),
         IndustryDef(
             id = "marketing",
-            displayName = "市场营销",
+            displayName = "市場營銷",
             sampleKeywords = listOf(
                 "Social Media", "SEO", "Campaign", "Content Writing", "Analytics", "Brand"
             ),
@@ -60,7 +60,7 @@ object IndustryData {
         ),
         IndustryDef(
             id = "customer_service",
-            displayName = "客户服务",
+            displayName = "客戶服務",
             sampleKeywords = listOf(
                 "Customer Support", "Issue Resolution", "CRM", "Communication", "Service Quality", "SLA"
             ),
@@ -75,7 +75,7 @@ object IndustryData {
         ),
         IndustryDef(
             id = "finance",
-            displayName = "金融 / 会计",
+            displayName = "金融 / 會計",
             sampleKeywords = listOf(
                 "Financial Reporting", "Budgeting", "Forecasting", "Excel", "GAAP", "Reconciliation"
             ),
@@ -90,7 +90,7 @@ object IndustryData {
         ),
         IndustryDef(
             id = "hr",
-            displayName = "人力资源",
+            displayName = "人力資源",
             sampleKeywords = listOf(
                 "Recruitment", "Onboarding", "HR Policies", "Employee Relations", "HRIS", "L&D"
             ),
@@ -105,7 +105,7 @@ object IndustryData {
         ),
         IndustryDef(
             id = "retail_sales",
-            displayName = "零售 / 销售",
+            displayName = "零售 / 銷售",
             sampleKeywords = listOf(
                 "Sales Target", "Product Knowledge", "Customer Engagement", "POS", "KPI", "Upselling"
             ),
@@ -120,7 +120,7 @@ object IndustryData {
         ),
         IndustryDef(
             id = "healthcare",
-            displayName = "医疗 / 护理",
+            displayName = "醫療 / 護理",
             sampleKeywords = listOf(
                 "Patient Care", "Clinical Documentation", "Medical Terminology", "HIPAA", "EMR", "Triage"
             ),

@@ -31,10 +31,10 @@ class MainAppVM(app: Application) : AndroidViewModel(app) {
     private val _credits = MutableStateFlow(0)
     val credits: StateFlow<Int> = _credits
 
-    // 游客 credits（本地）
+    // 遊客 credits（本地）
     private var guestCredits = 0
 
-    // 本地删除的记录 ID
+    // 本地刪除的記錄 ID
     private val locallyDeletedIds = mutableSetOf<Long>()
 
     init {
@@ -80,12 +80,12 @@ class MainAppVM(app: Application) : AndroidViewModel(app) {
         )
     }
 
-    /* ---------- Merge remote + 保留本地删除 ---------- */
+    /* ---------- Merge remote + 保留本地刪除 ---------- */
     private fun mergeRemote(remote: List<OptimizationRecord>): List<OptimizationRecord> {
         val local = _history.value
         val byId = remote.associateBy { it.id }.toMutableMap()
 
-        // 补充 analysis
+        // 補充 analysis
         local.forEach { l ->
             val r = byId[l.id]
             if (r != null && r.analysis == null && l.analysis != null) {
@@ -93,13 +93,13 @@ class MainAppVM(app: Application) : AndroidViewModel(app) {
             }
         }
 
-        // 去掉本地已删除的
+        // 去掉本地已刪除的
         locallyDeletedIds.forEach { delId -> byId.remove(delId) }
 
         return byId.values.sortedByDescending { it.createdAt }
     }
 
-    /* ---------- 手动刷新 ---------- */
+    /* ---------- 手動刷新 ---------- */
     suspend fun refreshHistory(u: String) {
         try {
             val remote = api.listRecords(userId = u, limit = 100).map { r ->
@@ -164,7 +164,7 @@ class MainAppVM(app: Application) : AndroidViewModel(app) {
             try {
                 val u = uid.value
                 if (u.isNullOrBlank()) {
-                    throw IllegalStateException("必须登录才能保存记录")
+                    throw IllegalStateException("必須登錄才能保存記錄")
                 }
                 if (!consumeOne()) throw IllegalStateException("No credits remaining")
 

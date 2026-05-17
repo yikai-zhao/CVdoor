@@ -25,8 +25,8 @@ fun HistoryScreen(
     onLogout: () -> Unit,
     onOpenDetails: (OptimizationRecord) -> Unit,
     onReOptimize: (OptimizationRecord) -> Unit,
-    onDelete: (OptimizationRecord) -> Unit,   // ✅ 调用 MainAppVM.deleteRecord
-    onClearAll: () -> Unit,                   // ✅ 调用 MainAppVM.clearHistory
+    onDelete: (OptimizationRecord) -> Unit,   // ✅ 調用 MainAppVM.deleteRecord
+    onClearAll: () -> Unit,                   // ✅ 調用 MainAppVM.clearHistory
     records: List<OptimizationRecord> = emptyList()
 ) {
     Surface(color = NightNavy) {
@@ -76,7 +76,7 @@ fun HistoryScreen(
                     } else {
                         items(
                             items = records,
-                            key = { it.id }  // ✅ 用 id 作为稳定 key
+                            key = { it.id }  // ✅ 用 id 作爲穩定 key
                         ) { rec ->
                             HistoryItem(
                                 rec = rec,
@@ -92,7 +92,7 @@ fun HistoryScreen(
             }
         )
 
-        /* 单条删除确认 */
+        /* 單條刪除確認 */
         if (toDelete != null) {
             AlertDialog(
                 onDismissRequest = { toDelete = null },
@@ -101,7 +101,7 @@ fun HistoryScreen(
                 confirmButton = {
                     TextButton(onClick = {
                         val r = toDelete!!; toDelete = null
-                        onDelete(r)   // ✅ 调用 VM.deleteRecord
+                        onDelete(r)   // ✅ 調用 VM.deleteRecord
                     }) { Text("Delete") }
                 },
                 dismissButton = {
@@ -110,7 +110,7 @@ fun HistoryScreen(
             )
         }
 
-        /* 清空全部确认 */
+        /* 清空全部確認 */
         if (askClearAll) {
             AlertDialog(
                 onDismissRequest = { askClearAll = false },
@@ -119,7 +119,7 @@ fun HistoryScreen(
                 confirmButton = {
                     TextButton(onClick = {
                         askClearAll = false
-                        onClearAll()  // ✅ 调用 VM.clearHistory
+                        onClearAll()  // ✅ 調用 VM.clearHistory
                     }) { Text("Clear All") }
                 },
                 dismissButton = {
@@ -142,7 +142,7 @@ private fun HistoryItem(
             modifier = Modifier.padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(10.dp)
         ) {
-            // 顶部：公司/职位 + 时间 + 分数
+            // 頂部：公司/職位 + 時間 + 分數
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
@@ -178,7 +178,7 @@ private fun HistoryItem(
                 }
             }
 
-            // 进度条
+            // 進度條
             Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
                 Text("Match Rate (Overall)", color = TextSecondary, fontSize = 12.sp)
                 LinearProgressIndicator(
@@ -192,7 +192,7 @@ private fun HistoryItem(
                 )
             }
 
-            // 操作按钮
+            // 操作按鈕
             Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                 OutlinedButton(onClick = onDetails) { Text("Details") }
                 Button(onClick = onReOptimize) { Text("Re-Optimize") }
@@ -211,7 +211,7 @@ private fun HistoryItem(
     }
 }
 
-/* ---------- 工具函数 ---------- */
+/* ---------- 工具函數 ---------- */
 private fun OptimizationRecord.titleLine(): String {
     val first = jdText.lineSequence().firstOrNull()?.trim().orEmpty()
     if (first.isNotBlank()) return first.take(40)

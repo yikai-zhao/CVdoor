@@ -49,7 +49,7 @@ fun IndustrySelectScreen(
             IconButton(onClick = onBack) {
                 Icon(Icons.Default.ArrowBack, contentDescription = "Back", tint = TextPrimary)
             }
-            Text("行业与目标岗位", fontSize = 18.sp, fontWeight = FontWeight.SemiBold, color = TextPrimary,
+            Text("行業與目標崗位", fontSize = 18.sp, fontWeight = FontWeight.SemiBold, color = TextPrimary,
                 modifier = Modifier.weight(1f).padding(start = 4.dp))
         }
 
@@ -60,7 +60,7 @@ fun IndustrySelectScreen(
         ) {
             // Industry selector
             item {
-                SectionLabel("请选择目标行业")
+                SectionLabel("請選擇目標行業")
                 Spacer(Modifier.height(10.dp))
                 Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                     IndustryData.industries.chunked(2).forEach { row ->
@@ -81,12 +81,12 @@ fun IndustrySelectScreen(
 
             // Target role
             item {
-                SectionLabel("目标岗位名称")
+                SectionLabel("目標崗位名稱")
                 Spacer(Modifier.height(8.dp))
                 OutlinedTextField(
                     value = roleInput,
                     onValueChange = { roleInput = it },
-                    placeholder = { Text("例：幼稚园教学助理", color = TextSecondary) },
+                    placeholder = { Text("例：幼稚園教學助理", color = TextSecondary) },
                     modifier = Modifier.fillMaxWidth(),
                     colors = OutlinedTextFieldDefaults.colors(
                         focusedBorderColor = AccentBlue, unfocusedBorderColor = Stroke,
@@ -120,7 +120,7 @@ fun IndustrySelectScreen(
 
             // Region selector
             item {
-                SectionLabel("目标地区")
+                SectionLabel("目標地區")
                 Spacer(Modifier.height(10.dp))
                 Row(
                     modifier = Modifier.horizontalScroll(rememberScrollState()),
@@ -138,9 +138,9 @@ fun IndustrySelectScreen(
 
             // ATS keyword preview
             item {
-                SectionLabel("ATS 关键词库预览")
+                SectionLabel("ATS 關鍵詞庫預覽")
                 Spacer(Modifier.height(4.dp))
-                Text("以下仅展示部分常见关键词，支付后将生成完整匹配分析",
+                Text("以下僅展示部分常見關鍵詞，支付後將生成完整匹配分析",
                     fontSize = 12.sp, color = TextSecondary, lineHeight = 18.sp)
                 Spacer(Modifier.height(10.dp))
                 Row(
@@ -152,7 +152,7 @@ fun IndustrySelectScreen(
                     }
                 }
                 Spacer(Modifier.height(8.dp))
-                Text("🔒 更多关键词将在支付后完整展示",
+                Text("🔒 更多關鍵詞將在支付後完整展示",
                     fontSize = 12.sp, color = AccentYellow)
             }
 
@@ -161,7 +161,7 @@ fun IndustrySelectScreen(
 
         Box(modifier = Modifier.fillMaxWidth().padding(16.dp)) {
             GradientCta(
-                text = "下一步：输入 JD",
+                text = "下一步：輸入 JD",
                 enabled = canProceed,
                 onClick = {
                     vm.setIndustry(selectedIndustryId, selectedDef.displayName)

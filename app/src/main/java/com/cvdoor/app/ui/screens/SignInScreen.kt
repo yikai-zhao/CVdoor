@@ -50,7 +50,7 @@ fun SignInScreen(onSignedIn: () -> Unit) {
 
     val isDebug = (ctx.applicationInfo.flags and ApplicationInfo.FLAG_DEBUGGABLE) != 0
 
-    // 请求 email + idToken（用于以后发给后端换 session）
+    // 請求 email + idToken（用於以後發給後端換 session）
     val gso = remember {
         GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
             .requestEmail()
@@ -72,10 +72,10 @@ fun SignInScreen(onSignedIn: () -> Unit) {
 
             val uid  = acc.id ?: acc.email ?: "local-user"
             val name = acc.displayName ?: acc.email ?: "User"
-            val idToken = acc.idToken // 以后可以发给你的后端换会话
+            val idToken = acc.idToken // 以後可以發給你的後端換會話
 
             scope.launch {
-                // 现在先用你本地的 AuthDataStore（和现有 VM/Repo 对齐）
+                // 現在先用你本地的 AuthDataStore（和現有 VM/Repo 對齊）
                 auth.set(uid, name)
                 onSignedIn()
             }

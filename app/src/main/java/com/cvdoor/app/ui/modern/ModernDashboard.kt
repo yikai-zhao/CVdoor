@@ -40,7 +40,7 @@ import kotlin.math.cos
 import kotlin.math.min
 import kotlin.math.sin
 
-/* ========== 用参数调用（MainActivity 正在用） ========== */
+/* ========== 用參數調用（MainActivity 正在用） ========== */
 @Composable
 fun ModernDashboard(
     credits: Int,
@@ -81,7 +81,7 @@ fun ModernDashboard(
     )
 }
 
-/* ========== 直接传 nav / vm（可选） ========== */
+/* ========== 直接傳 nav / vm（可選） ========== */
 @Composable
 fun ModernDashboard(
     nav: NavController,
@@ -90,7 +90,7 @@ fun ModernDashboard(
     val credits by vm.credits.collectAsState(initial = 0)
     val history by vm.history.collectAsState(initial = emptyList())
 
-    // ✅ 最新记录在最前
+    // ✅ 最新記錄在最前
     val latest: OptimizationRecord? = remember(history) { history.firstOrNull() }
 
     val match = latest?.afterTotal ?: 0
@@ -113,7 +113,7 @@ fun ModernDashboard(
         onBuyCredits = { vm.addCredits(10) },
         accountText = "Account Balance",
         onInfo = { nav.navigate("info") },
-        onExportRecent = { /* 导出报告：可加 vm.export... */nav.navigate("sample") },
+        onExportRecent = { /* 導出報告：可加 vm.export... */nav.navigate("sample") },
         radarBefore = beforeDims,
         radarAfter = afterDims,
         onOpenRecentDetails = {
@@ -124,7 +124,7 @@ fun ModernDashboard(
     )
 }
 
-/* ========== 通用实现（UI） ========== */
+/* ========== 通用實現（UI） ========== */
 @Composable
 private fun ModernDashboardImpl(
     credits: Int,
@@ -182,7 +182,7 @@ private fun ModernDashboardImpl(
                 .padding(horizontal = 20.dp, vertical = 16.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            // 顶部标题
+            // 頂部標題
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
@@ -200,7 +200,7 @@ private fun ModernDashboardImpl(
                 }
             }
 
-            // 余额卡片
+            // 餘額卡片
             Card(
                 modifier = Modifier.fillMaxWidth(),
                 colors = CardDefaults.cardColors(containerColor = NightElevated),
@@ -257,7 +257,7 @@ private fun ModernDashboardImpl(
                 }
             }
 
-            // 六维雷达
+            // 六維雷達
             SixDimRadarCard(
                 labels = listOf("Fmt","KW","Sem","Title","Read","Rec"),
                 before = radarBefore.pad6(),
@@ -310,7 +310,7 @@ private fun ModernDashboardImpl(
     }
 }
 
-/* ---------- 小组件 ---------- */
+/* ---------- 小組件 ---------- */
 @Composable
 private fun ActionChip(icon: androidx.compose.ui.graphics.vector.ImageVector, text: String, onClick: () -> Unit) {
     Surface(
@@ -348,7 +348,7 @@ private fun ProgressBar(value: Float, height: Dp = 10.dp) {
     )
 }
 
-/* ---------- 六维雷达 ---------- */
+/* ---------- 六維雷達 ---------- */
 @Composable
 private fun SixDimRadarCard(labels: List<String>, before: List<Int>, after: List<Int>, onExport: () -> Unit) {
     fun List<Int>.norm6() = (this + List(6) { 0 }).take(6).map { it.coerceIn(0, 100) }

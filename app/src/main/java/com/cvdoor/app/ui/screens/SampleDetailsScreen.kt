@@ -39,7 +39,7 @@ fun SampleDetailsScreen(onBack: () -> Unit) {
         )
     )
 
-    // ✅ 直接调用 RecordDetailsScreen，保持 UI 与真实结果完全一致
+    // ✅ 直接調用 RecordDetailsScreen，保持 UI 與真實結果完全一致
     RecordDetailsScreen(
         resume = "Sample resume content here...",
         jd = "Sample job description here...",

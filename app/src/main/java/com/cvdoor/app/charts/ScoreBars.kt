@@ -11,7 +11,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import com.cvdoor.app.score.ScoreBreakdown
 
-private val dimLabels = listOf("格式", "关键词", "语义", "职位", "可读性", "最近度")
+private val dimLabels = listOf("格式", "關鍵詞", "語義", "職位", "可讀性", "最近度")
 
 @Composable
 fun ScoreCompareBars(
@@ -37,10 +37,10 @@ private fun MetricRow(label: String, before: Int, after: Int) {
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
             Text(text = label, style = MaterialTheme.typography.bodyMedium)
-            Text(text = "原始 $before / 优化 $after", style = MaterialTheme.typography.bodySmall)
+            Text(text = "原始 $before / 優化 $after", style = MaterialTheme.typography.bodySmall)
         }
         Spacer(Modifier.height(6.dp))
-        // 两条“并排”柱状进度（0~100），绿色=优化后，蓝色=原始
+        // 兩條“並排”柱狀進度（0~100），綠色=優化後，藍色=原始
         Row(
             modifier = Modifier
                 .fillMaxWidth()
@@ -52,14 +52,14 @@ private fun MetricRow(label: String, before: Int, after: Int) {
             val beforeWidth = (before / 100f).coerceIn(0f, 1f)
             val afterWidth = (after / 100f).coerceIn(0f, 1f)
 
-            // 原始（左半透明蓝）
+            // 原始（左半透明藍）
             Box(
                 modifier = Modifier
                     .fillMaxHeight()
                     .fillMaxWidth(beforeWidth * totalWidth)
                     .background(Color(0xFF7BA7FF).copy(alpha = 0.55f))
             )
-            // 在上面叠加“优化后”（绿色），若更高会覆盖更多宽度
+            // 在上面疊加“優化後”（綠色），若更高會覆蓋更多寬度
             Box(
                 modifier = Modifier
                     .fillMaxHeight()

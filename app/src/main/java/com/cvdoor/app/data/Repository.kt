@@ -12,7 +12,7 @@ class Repository(ctx: Context) {
     private val recordDao = db.recordDao()
     private val accountDao = db.accountDao()
 
-    /* ---------------- 记录 ---------------- */
+    /* ---------------- 記錄 ---------------- */
 
     suspend fun saveRecord(rec: OptimizationRecord): Long = withContext(Dispatchers.IO) {
         recordDao.insert(rec.normalizedForSave().toEntity())
@@ -33,7 +33,7 @@ class Repository(ctx: Context) {
         recordDao.deleteAllForUser(uid)
     }
 
-    /* ---------------- 账户 ---------------- */
+    /* ---------------- 賬戶 ---------------- */
 
     suspend fun ensureAccount(uid: String) = withContext(Dispatchers.IO) {
         if (accountDao.get(uid) == null) {
@@ -54,7 +54,7 @@ class Repository(ctx: Context) {
     }
 }
 
-/* ==================== 以下是你已有的归一化/修正工具（保持不变） ==================== */
+/* ==================== 以下是你已有的歸一化/修正工具（保持不變） ==================== */
 
 private fun clampPct(v: Int) = v.coerceIn(0, 100)
 private fun clampList6(lst: List<Int>): List<Int> {

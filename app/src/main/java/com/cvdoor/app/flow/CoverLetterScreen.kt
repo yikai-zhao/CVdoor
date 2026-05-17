@@ -36,7 +36,7 @@ fun CoverLetterScreen(
     val styleOptions = listOf(
         "正式版" to "professional",
         "自然版" to "natural",
-        "简短版" to "brief"
+        "簡短版" to "brief"
     )
     val clipboard = LocalClipboardManager.current
     val ctx = LocalContext.current
@@ -52,7 +52,7 @@ fun CoverLetterScreen(
         if (isRegenerating && state.phase != FlowPhase.LOADING) {
             isRegenerating = false
             regenerateError = if (state.phase == FlowPhase.ERROR) {
-                state.errorMsg.ifBlank { "求职信生成失败，请重试" }
+                state.errorMsg.ifBlank { "求職信生成失敗，請重試" }
             } else {
                 ""
             }
@@ -61,10 +61,10 @@ fun CoverLetterScreen(
 
     // one-time consistency checks
     val checks = listOf(
-        Triple("✓", "岗位名称一致", true),
-        Triple("✓", "JD 关键词已覆盖", true),
-        Triple("✓", "未使用未确认数字", true),
-        Triple("⚠", "建议补充公司名称", false)
+        Triple("✓", "崗位名稱一致", true),
+        Triple("✓", "JD 關鍵詞已覆蓋", true),
+        Triple("✓", "未使用未確認數字", true),
+        Triple("⚠", "建議補充公司名稱", false)
     )
 
     Column(modifier = Modifier.fillMaxSize().background(NightNavy)) {
@@ -102,7 +102,7 @@ fun CoverLetterScreen(
                     .padding(14.dp),
                 verticalArrangement = Arrangement.spacedBy(6.dp)
             ) {
-                Text("一致性检查", fontSize = 13.sp, fontWeight = FontWeight.SemiBold,
+                Text("一致性檢查", fontSize = 13.sp, fontWeight = FontWeight.SemiBold,
                     color = AccentBlue, modifier = Modifier.padding(bottom = 4.dp))
                 checks.forEach { (icon, text, passed) ->
                     Row(verticalAlignment = Alignment.CenterVertically) {
@@ -116,7 +116,7 @@ fun CoverLetterScreen(
 
             // Cover letter content
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                Text("风格选择", fontSize = 12.sp, color = TextSecondary)
+                Text("風格選擇", fontSize = 12.sp, color = TextSecondary)
             }
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 styleOptions.forEach { (styleLabel, styleValue) ->
@@ -141,7 +141,7 @@ fun CoverLetterScreen(
                     Column(horizontalAlignment = Alignment.CenterHorizontally,
                         verticalArrangement = Arrangement.spacedBy(12.dp)) {
                         CircularProgressIndicator(modifier = Modifier.size(36.dp), color = AccentBlue)
-                        Text("正在使用 AI 重新生成求职信...", fontSize = 13.sp, color = TextSecondary)
+                        Text("正在使用 AI 重新生成求職信...", fontSize = 13.sp, color = TextSecondary)
                     }
                 }
             } else if (regenerateError.isNotBlank()) {
@@ -176,7 +176,7 @@ fun CoverLetterScreen(
                         .padding(16.dp)
                 ) {
                     Text(
-                        coverLetter.ifBlank { "暂无 Cover Letter，请重新优化以生成。" },
+                        coverLetter.ifBlank { "暫無 Cover Letter，請重新優化以生成。" },
                         fontSize = 13.sp, color = TextPrimary, lineHeight = 22.sp
                     )
                 }
@@ -186,7 +186,7 @@ fun CoverLetterScreen(
 
         // Bottom actions
         Column(
-            modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 12.dp),
+            modifier = Modifier.fillMaxWidth().navigationBarsPadding().padding(horizontal = 16.dp, vertical = 12.dp),
             verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -201,7 +201,7 @@ fun CoverLetterScreen(
                     Icon(if (isEditing) Icons.Default.Close else Icons.Default.Edit,
                         contentDescription = null, modifier = Modifier.size(16.dp))
                     Spacer(Modifier.width(4.dp))
-                    Text(if (isEditing) "取消" else "编辑", fontSize = 13.sp)
+                    Text(if (isEditing) "取消" else "編輯", fontSize = 13.sp)
                 }
                 // Copy button
                 OutlinedButton(
@@ -219,7 +219,7 @@ fun CoverLetterScreen(
                     Icon(if (copyDone) Icons.Default.Check else Icons.Default.ContentCopy,
                         contentDescription = null, modifier = Modifier.size(16.dp))
                     Spacer(Modifier.width(4.dp))
-                    Text(if (copyDone) "已复制" else "复制", fontSize = 13.sp)
+                    Text(if (copyDone) "已複製" else "複製", fontSize = 13.sp)
                 }
             }
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -247,7 +247,7 @@ fun CoverLetterScreen(
                     shape = RoundedCornerShape(10.dp),
                     enabled = !isRegenerating
                 ) {
-                    Text("下载 Word/PDF", fontSize = 13.sp)
+                    Text("下載 Word/PDF", fontSize = 13.sp)
                 }
             }
         }

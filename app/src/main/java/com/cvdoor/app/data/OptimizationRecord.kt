@@ -1,6 +1,6 @@
 package com.cvdoor.app.data
 
-/* -------- 分析结构（UI 专用） -------- */
+/* -------- 分析結構（UI 專用） -------- */
 data class DimAnalysis(
     val name: String? = null,
     val before: Int? = null,
@@ -24,7 +24,7 @@ data class AnalysisOut(
     val dimensions: List<DimAnalysis> = emptyList()
 )
 
-/* -------- UI 用“历史记录”模型（带 analysis，不入库） -------- */
+/* -------- UI 用“歷史記錄”模型（帶 analysis，不入庫） -------- */
 data class OptimizationRecord(
     val id: Long,
     val userId: String,

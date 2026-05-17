@@ -21,11 +21,11 @@ import androidx.compose.ui.unit.sp
 import com.cvdoor.app.ui.theme.*
 
 private val STEPS = listOf(
-    "正在解析简历",
-    "正在分析岗位需求",
-    "正在匹配你的经验",
-    "正在优化简历",
-    "正在生成求职信"
+    "正在解析簡歷",
+    "正在分析崗位需求",
+    "正在匹配你的經驗",
+    "正在優化簡歷",
+    "正在生成求職信"
 )
 
 @Composable
@@ -49,7 +49,7 @@ fun ProcessingScreen(
             ) {
                 Text("😕", fontSize = 48.sp)
                 Text(
-                    "出现错误，请重试",
+                    "出現錯誤，請重試",
                     fontSize = 20.sp,
                     fontWeight = FontWeight.SemiBold,
                     color = TextPrimary,
@@ -82,7 +82,7 @@ fun ProcessingScreen(
                         contentAlignment = Alignment.Center
                     ) {
                         Text(
-                            "重新尝试",
+                            "重新嘗試",
                             fontSize = 16.sp,
                             fontWeight = FontWeight.SemiBold,
                             color = Color.White
@@ -98,7 +98,7 @@ fun ProcessingScreen(
                 modifier = Modifier.padding(horizontal = 32.dp)
             ) {
                 Text(
-                    "正在优化你的简历",
+                    "正在優化你的簡歷",
                     fontSize = 22.sp,
                     fontWeight = FontWeight.Bold,
                     color = TextPrimary,
@@ -118,7 +118,7 @@ fun ProcessingScreen(
                 }
 
                 Text(
-                    "预计需要30秒左右",
+                    "預計需要30秒左右",
                     fontSize = 13.sp,
                     color = TextSecondary.copy(0.6f),
                     textAlign = TextAlign.Center

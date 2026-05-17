@@ -56,16 +56,16 @@ fun ResumeEditScreen(
             IconButton(onClick = onBack) {
                 Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back", tint = TextPrimary)
             }
-            Text("编辑简历", color = TextPrimary, fontSize = 18.sp)
+            Text("編輯簡歷", color = TextPrimary, fontSize = 18.sp)
         }
 
         Column(
             modifier = Modifier.weight(1f).verticalScroll(rememberScrollState()).padding(horizontal = 16.dp),
             verticalArrangement = Arrangement.spacedBy(10.dp)
         ) {
-            Text("ATS 辅助工具", color = TextSecondary, fontSize = 13.sp)
+            Text("ATS 輔助工具", color = TextSecondary, fontSize = 13.sp)
             Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-                listOf("增强关键词", "更ATS友好", "职责转成果", "强动词替换").forEach {
+                listOf("增強關鍵詞", "更ATS友好", "職責轉成果", "強動詞替換").forEach {
                     AssistChip(
                         onClick = { },
                         label = { Text(it, fontSize = 11.sp) },
@@ -88,13 +88,13 @@ fun ResumeEditScreen(
             )
 
             Button(onClick = { onFillData() }, modifier = Modifier.fillMaxWidth()) {
-                Text("添加真实数据")
+                Text("添加真實數據")
             }
             Button(onClick = { onSave(edited) }, modifier = Modifier.fillMaxWidth()) {
                 Text("保存")
             }
             Button(onClick = onSaveAndReoptimize, modifier = Modifier.fillMaxWidth()) {
-                Text("保存并重新优化")
+                Text("保存並重新優化")
             }
             Spacer(Modifier.height(16.dp))
         }

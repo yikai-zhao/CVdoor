@@ -62,7 +62,7 @@ private fun exportWord(context: Context, pkg: ExportPackage) {
         context = context,
         file = outFile,
         mimeType = "application/msword",
-        chooserTitle = "导出 Word"
+        chooserTitle = "導出 Word"
     )
 }
 
@@ -116,7 +116,7 @@ private fun exportPdf(context: Context, pkg: ExportPackage) {
         context = context,
         file = outFile,
         mimeType = "application/pdf",
-        chooserTitle = "导出 PDF"
+        chooserTitle = "導出 PDF"
     )
 }
 

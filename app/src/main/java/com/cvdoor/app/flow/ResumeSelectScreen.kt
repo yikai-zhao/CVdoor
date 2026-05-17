@@ -58,7 +58,7 @@ fun ResumeSelectScreen(
                 Icon(Icons.Default.ArrowBack, contentDescription = "Back", tint = TextPrimary)
             }
             Text(
-                "选择简历",
+                "選擇簡歷",
                 fontSize = 18.sp,
                 fontWeight = FontWeight.SemiBold,
                 color = TextPrimary,
@@ -80,16 +80,16 @@ fun ResumeSelectScreen(
                     modifier = Modifier.size(64.dp)
                 )
                 Spacer(Modifier.height(16.dp))
-                Text("暂无已保存简历", fontSize = 18.sp, fontWeight = FontWeight.SemiBold, color = TextPrimary)
+                Text("暫無已保存簡歷", fontSize = 18.sp, fontWeight = FontWeight.SemiBold, color = TextPrimary)
                 Spacer(Modifier.height(8.dp))
                 Text(
-                    "上传一次后，之后可直接复用，\n无需反复上传。",
+                    "上傳一次後，之後可直接複用，\n無需反覆上傳。",
                     fontSize = 14.sp, color = TextSecondary,
                     modifier = Modifier.padding(horizontal = 16.dp),
                     lineHeight = 22.sp
                 )
                 Spacer(Modifier.height(32.dp))
-                GradientCta("上传新简历", onClick = onUploadNew)
+                GradientCta("上傳新簡歷", onClick = onUploadNew)
             }
         } else {
             LazyColumn(
@@ -99,7 +99,7 @@ fun ResumeSelectScreen(
             ) {
                 item {
                     Text(
-                        "选择一份简历开始 ATS 优化",
+                        "選擇一份簡歷開始 ATS 優化",
                         fontSize = 14.sp, color = TextSecondary,
                         modifier = Modifier.padding(vertical = 8.dp)
                     )
@@ -127,7 +127,7 @@ fun ResumeSelectScreen(
                 ) {
                     Icon(Icons.Default.Add, contentDescription = null, modifier = Modifier.size(18.dp))
                     Spacer(Modifier.width(6.dp))
-                    Text("上传新简历", fontSize = 15.sp, fontWeight = FontWeight.Medium)
+                    Text("上傳新簡歷", fontSize = 15.sp, fontWeight = FontWeight.Medium)
                 }
             }
         }
@@ -165,7 +165,7 @@ private fun ResumeCard(
             Spacer(Modifier.height(4.dp))
             Text("最近使用：$dateStr", fontSize = 12.sp, color = TextSecondary)
             if (resume.optimizationCount > 0) {
-                Text("已优化 ${resume.optimizationCount} 次", fontSize = 12.sp, color = AccentGreen)
+                Text("已優化 ${resume.optimizationCount} 次", fontSize = 12.sp, color = AccentGreen)
             }
         }
         Column(horizontalAlignment = Alignment.CenterHorizontally) {
@@ -196,13 +196,13 @@ fun ResumeUploadScreen(
     onBack: () -> Unit,
     onNext: () -> Unit   // → IndustrySelectScreen
 ) {
-    var resumeNameInput by remember { mutableStateOf("我的简历") }
+    var resumeNameInput by remember { mutableStateOf("我的簡歷") }
     var pasteText by remember { mutableStateOf(state.resumeText) }
     val ctx = LocalContext.current
 
     val filePicker = rememberLauncherForActivityResult(ActivityResultContracts.GetContent()) { uri: Uri? ->
         uri ?: return@rememberLauncherForActivityResult
-        val name = uri.lastPathSegment?.substringAfterLast('/') ?: "简历文件"
+        val name = uri.lastPathSegment?.substringAfterLast('/') ?: "簡歷文件"
         resumeNameInput = name.substringBeforeLast('.')
         vm.setResumeFile(uri, name)
     }
@@ -222,7 +222,7 @@ fun ResumeUploadScreen(
             IconButton(onClick = onBack) {
                 Icon(Icons.Default.ArrowBack, contentDescription = "Back", tint = TextPrimary)
             }
-            Text("上传简历", fontSize = 18.sp, fontWeight = FontWeight.SemiBold, color = TextPrimary,
+            Text("上傳簡歷", fontSize = 18.sp, fontWeight = FontWeight.SemiBold, color = TextPrimary,
                 modifier = Modifier.weight(1f).padding(start = 4.dp))
         }
 
@@ -232,7 +232,7 @@ fun ResumeUploadScreen(
             modifier = Modifier.weight(1f)
         ) {
             item {
-                Text("上传你的简历", fontSize = 16.sp, fontWeight = FontWeight.SemiBold, color = TextPrimary)
+                Text("上傳你的簡歷", fontSize = 16.sp, fontWeight = FontWeight.SemiBold, color = TextPrimary)
                 Text("支持 PDF / DOCX / 文本", fontSize = 13.sp, color = TextSecondary,
                     modifier = Modifier.padding(top = 4.dp))
             }
@@ -262,11 +262,11 @@ fun ResumeUploadScreen(
                             Text(state.resumeFileName, fontSize = 14.sp, color = AccentGreen,
                                 fontWeight = FontWeight.Medium, maxLines = 1, overflow = TextOverflow.Ellipsis)
                             TextButton(onClick = { vm.clearResumeSelection() }) {
-                                Text("重新选择", fontSize = 13.sp, color = TextSecondary)
+                                Text("重新選擇", fontSize = 13.sp, color = TextSecondary)
                             }
                         } else {
-                            Text("点击选择文件", fontSize = 14.sp, color = AccentBlue, fontWeight = FontWeight.Medium)
-                            Text("或拖拽到此处", fontSize = 12.sp, color = TextSecondary)
+                            Text("點擊選擇文件", fontSize = 14.sp, color = AccentBlue, fontWeight = FontWeight.Medium)
+                            Text("或拖拽到此處", fontSize = 12.sp, color = TextSecondary)
                         }
                     }
                 }
@@ -274,13 +274,13 @@ fun ResumeUploadScreen(
 
             // Paste text
             item {
-                Text("或直接粘贴简历文本", fontSize = 14.sp, color = TextPrimary, fontWeight = FontWeight.Medium)
+                Text("或直接粘貼簡歷文本", fontSize = 14.sp, color = TextPrimary, fontWeight = FontWeight.Medium)
                 Spacer(Modifier.height(8.dp))
                 OutlinedTextField(
                     value = if (state.resumeFileName.isNotBlank()) state.resumeText else pasteText,
                     onValueChange = { txt -> pasteText = txt; vm.setResumeText(txt) },
                     enabled = state.resumeFileName.isBlank(),
-                    placeholder = { Text("粘贴完整简历内容...", color = TextSecondary) },
+                    placeholder = { Text("粘貼完整簡歷內容...", color = TextSecondary) },
                     modifier = Modifier.fillMaxWidth().heightIn(min = 140.dp),
                     colors = OutlinedTextFieldDefaults.colors(
                         focusedBorderColor = AccentBlue,
@@ -298,12 +298,12 @@ fun ResumeUploadScreen(
 
             // Name input
             item {
-                Text("简历名称", fontSize = 14.sp, color = TextPrimary, fontWeight = FontWeight.Medium)
+                Text("簡歷名稱", fontSize = 14.sp, color = TextPrimary, fontWeight = FontWeight.Medium)
                 Spacer(Modifier.height(8.dp))
                 OutlinedTextField(
                     value = resumeNameInput,
                     onValueChange = { resumeNameInput = it },
-                    placeholder = { Text("例：Lisa 幼稚园助理简历", color = TextSecondary) },
+                    placeholder = { Text("例：Lisa 幼稚園助理簡歷", color = TextSecondary) },
                     modifier = Modifier.fillMaxWidth(),
                     colors = OutlinedTextFieldDefaults.colors(
                         focusedBorderColor = AccentBlue, unfocusedBorderColor = Stroke,
@@ -321,7 +321,7 @@ fun ResumeUploadScreen(
 
         Box(modifier = Modifier.fillMaxWidth().padding(16.dp)) {
             GradientCta(
-                text = "保存并继续",
+                text = "保存並繼續",
                 enabled = hasContent && resumeNameInput.isNotBlank(),
                 onClick = {
                     val content = if (state.resumeFileName.isNotBlank()) state.resumeText else pasteText

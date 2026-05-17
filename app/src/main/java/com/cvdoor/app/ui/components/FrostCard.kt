@@ -15,7 +15,7 @@ import com.cvdoor.app.ui.theme.CardStroke
 import com.cvdoor.app.ui.theme.NightElevated
 
 /**
- * 与原 GlassCard 功能相同，只是换了名字防止重载冲突
+ * 與原 GlassCard 功能相同，只是換了名字防止重載衝突
  */
 @Composable
 fun FrostCard(

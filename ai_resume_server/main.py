@@ -14,10 +14,10 @@ from typing import List, Optional
 from openai import OpenAI
 import os, json, traceback, time, sqlite3, threading, re, difflib
 
-# ===== 环境 =====
+# ===== 環境 =====
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 if not OPENAI_API_KEY:
-    raise RuntimeError("环境变量 OPENAI_API_KEY 未设置")
+    raise RuntimeError("環境變量 OPENAI_API_KEY 未設置")
 
 OPENAI_MODEL = os.getenv("OPENAI_MODEL", "gpt-4o-mini")
 DEBUG = os.getenv("DEBUG", "1") == "1"
@@ -123,28 +123,28 @@ app.add_middleware(
 )
 
 # ===== Prompt =====
-SYSTEM_PROMPT = """你是资深 ATS 简历优化专家兼专业求职信撰写师。
+SYSTEM_PROMPT = """你是資深 ATS 簡歷優化專家兼專業求職信撰寫師。
 
-你的任务：
-1. 分析【简历】与【职位JD】的匹配度，优化简历内容以增加 ATS 通过率
-2. 同时生成一份专业、针对性强的求职信，体现应聘者与该岗位的完美契合
+你的任務：
+1. 分析【簡歷】與【職位JD】的匹配度，優化簡歷內容以增加 ATS 通過率
+2. 同時生成一份專業、針對性強的求職信，體現應聘者與該崗位的完美契合
 
-输出格式：必须只输出 JSON（无其他文本），包含以下字段：
+輸出格式：必須只輸出 JSON（無其他文本），包含以下字段：
 
 {
-  "optimized": "<完整优化后的简历（保留格式）>",
-  "before_total": <0-100整数>,
-  "after_total": <0-100整数>,
-  "dims_before": [<关键词0-100>, <经验0-100>, <技能0-100>, <格式0-100>, <成就0-100>, <表达0-100>],
-  "dims_after": [<同上6个优化后分数>],
-  "added_keywords": ["<提取的关键词>", ...],
-  "cover_letter": "<专业英文求职信，250-300词。必须包含：(1)对目标公司和职位的深入理解，(2)突出应聘者的核心优势与JD关键技能的映射，(3)2-3个量化的成就示例，(4)对角色和公司的真挚兴趣与承诺>",
+  "optimized": "<完整優化後的簡歷（保留格式）>",
+  "before_total": <0-100整數>,
+  "after_total": <0-100整數>,
+  "dims_before": [<關鍵詞0-100>, <經驗0-100>, <技能0-100>, <格式0-100>, <成就0-100>, <表達0-100>],
+  "dims_after": [<同上6個優化後分數>],
+  "added_keywords": ["<提取的關鍵詞>", ...],
+  "cover_letter": "<專業英文求職信，250-300詞。必須包含：(1)對目標公司和職位的深入理解，(2)突出應聘者的核心優勢與JD關鍵技能的映射，(3)2-3個量化的成就示例，(4)對角色和公司的真摯興趣與承諾>",
   "analysis": {
     "overall": {
-      "summary": "<2-3句总结>",
-      "strengths": ["<优势1>", "<优势2>", ...],
-      "issues": ["<问题1>", "<问题2>", ...],
-      "actions": ["<建议1>", "<建议2>", ...]
+      "summary": "<2-3句總結>",
+      "strengths": ["<優勢1>", "<優勢2>", ...],
+      "issues": ["<問題1>", "<問題2>", ...],
+      "actions": ["<建議1>", "<建議2>", ...]
     },
     "dimensions": [
       {"name": "Keywords", "before": <0-100>, "after": <0-100>, "reasons": [...], "problems": [...], "suggestions": [...], "missing_before": [...], "added_after": [...]},
@@ -157,19 +157,19 @@ SYSTEM_PROMPT = """你是资深 ATS 简历优化专家兼专业求职信撰写�
   }
 }
 
-关键要求：
-- optimized 必须是“明显优化后”的版本，不可只做同义替换；要对经历 bullets 结构、动词、关键词、成果表达做实质增强
-- 每段经历（至少 3 段，若原文不足则按实际）最后一句必须是“量化成果句”
-- 量化成果句格式：动作 + 指标 + 结果，例如“通过X，使Y提升Z%”
-- 若原文没有真实数字，不可捏造；请写成“（请补充：xx指标数字）”的量化占位提示，指导用户补齐
-- analysis.overall.actions 必须包含至少 1 条“如何把经历改成量化表达”的可执行建议
-- cover_letter 必须是真实、高质量的英文求职信，不要生成占位符或模板
-- 求职信要充分利用简历中的成就数据，展现量化的影响力
-- 确保 JSON 格式完全有效，无转义错误
+關鍵要求：
+- optimized 必須是“明顯優化後”的版本，不可只做同義替換；要對經歷 bullets 結構、動詞、關鍵詞、成果表達做實質增強
+- 每段經歷（至少 3 段，若原文不足則按實際）最後一句必須是“量化成果句”
+- 量化成果句格式：動作 + 指標 + 結果，例如“通過X，使Y提升Z%”
+- 若原文沒有真實數字，不可捏造；請寫成“（請補充：xx指標數字）”的量化佔位提示，指導用戶補齊
+- analysis.overall.actions 必須包含至少 1 條“如何把經歷改成量化表達”的可執行建議
+- cover_letter 必須是真實、高質量的英文求職信，不要生成佔位符或模板
+- 求職信要充分利用簡歷中的成就數據，展現量化的影響力
+- 確保 JSON 格式完全有效，無轉義錯誤
 """
 
 def _build_user_msg(resume: str, jd: str) -> str:
-    return f"【简历】\n{resume.strip()}\n\n【职位JD】\n{jd.strip()}"
+    return f"【簡歷】\n{resume.strip()}\n\n【職位JD】\n{jd.strip()}"
 
 def _normalize_cover_letter_style(style: Optional[str]) -> str:
     allowed = {"professional", "natural", "brief"}
@@ -281,9 +281,9 @@ def _parse_response(obj: dict) -> OptimizeResp:
     )
 
 _BULLET_RE = re.compile(r"^\s*(?:[-*•·▪]|\d+[\).、])\s+")
-_METRIC_RE = re.compile(r"(\d|%|％|x|倍|HK\$|\$|¥|人|名|个|次|小时|天|周|月|年)")
+_METRIC_RE = re.compile(r"(\d|%|％|x|倍|HK\$|\$|¥|人|名|個|次|小時|天|周|月|年)")
 _PLACEHOLDER_RE = re.compile(
-    r"\[(?:请补充|待补充|待填写|to be filled|tbd|company|position|metric|数字)[\w\s\-:：，,]*\]",
+    r"\[(?:請補充|待補充|待填寫|to be filled|tbd|company|position|metric|數字)[\w\s\-:：，,]*\]",
     re.IGNORECASE
 )
 
@@ -319,29 +319,29 @@ def _needs_resume_rewrite(original: str, optimized: str) -> bool:
     return too_similar or not_quantified_enough
 
 def _rewrite_resume_with_quantification(resume: str, jd: str, draft: str) -> str:
-    prompt = f"""你是顶级中文简历优化顾问。请重写下面的“优化稿”，输出最终可投递简历正文（纯文本，不要JSON）。
+    prompt = f"""你是頂級中文簡歷優化顧問。請重寫下面的“優化稿”，輸出最終可投遞簡歷正文（純文本，不要JSON）。
 
 硬性要求：
-1) 明显优于原文，且与JD强相关。
-2) 每段经历最后一句必须为“量化成果句”（动作+指标+结果）。
-3) 如果缺少真实数字，不能编造；请使用“（请补充：某指标数字）”形式提示用户补齐。
-4) 强化ATS关键词匹配，避免空话。
-5) 保持专业、简洁、可读。
+1) 明顯優於原文，且與JD強相關。
+2) 每段經歷最後一句必須爲“量化成果句”（動作+指標+結果）。
+3) 如果缺少真實數字，不能編造；請使用“（請補充：某指標數字）”形式提示用戶補齊。
+4) 強化ATS關鍵詞匹配，避免空話。
+5) 保持專業、簡潔、可讀。
 
-【原始简历】
+【原始簡歷】
 {resume}
 
-【职位JD】
+【職位JD】
 {jd}
 
-【当前优化稿】
+【當前優化稿】
 {draft}
 """
     try:
         comp = client.chat.completions.create(
             model=OPENAI_MODEL,
             messages=[
-                {"role": "system", "content": "你只输出最终简历正文，不要解释。"},
+                {"role": "system", "content": "你只輸出最終簡歷正文，不要解釋。"},
                 {"role": "user", "content": prompt},
             ],
         )
@@ -353,8 +353,8 @@ def _ensure_quant_actions(analysis: Optional[AnalysisOut]) -> AnalysisOut:
     if analysis is None:
         analysis = AnalysisOut()
     actions = list(analysis.overall.actions or [])
-    quant_action = "把每段经历最后一句改成量化成果：动作 + 指标 + 结果（如：将到课率从A提升到B，+C%）。"
-    if not any(("量化" in a) or ("指标" in a) or ("%" in a) for a in actions):
+    quant_action = "把每段經歷最後一句改成量化成果：動作 + 指標 + 結果（如：將到課率從A提升到B，+C%）。"
+    if not any(("量化" in a) or ("指標" in a) or ("%" in a) for a in actions):
         actions.insert(0, quant_action)
     analysis.overall.actions = _dedup(actions, 5)
     return analysis
@@ -366,7 +366,7 @@ def _force_quantified_bullets(text: str) -> str:
     for line in lines:
         stripped = line.strip()
         if _is_bullet_line(stripped) and not _has_metric(stripped):
-            out.append(line.rstrip() + "（请补充：该项成果指标数字）")
+            out.append(line.rstrip() + "（請補充：該項成果指標數字）")
         else:
             out.append(line)
     return "\n".join(out).strip()
@@ -378,7 +378,7 @@ def _cover_letter_needs_retry(text: Optional[str]) -> bool:
     if _PLACEHOLDER_RE.search(t):
         return True
     lowered = t.lower()
-    # 补充兜底：用于识别未被占位符正则覆盖的英文模板残留片段
+    # 補充兜底：用於識別未被佔位符正則覆蓋的英文模板殘留片段
     quality_risk_markers = (
         "lorem ipsum",
         "tbd",
@@ -414,28 +414,28 @@ def _call_gpt(resume: str, jd: str) -> dict:
     return {}
 
 def _generate_cover_letter_only(resume: str, jd: str, style: str = "professional") -> str:
-    """专门生成求职信（用于"重新生成"功能）"""
+    """專門生成求職信（用於"重新生成"功能）"""
     normalized_style = _normalize_cover_letter_style(style)
     resume_context = _resume_focus_excerpt(resume)
-    cover_letter_prompt = f"""你是专业求职信撰写专家。根据以下信息生成一份高质量的英文求职信。
+    cover_letter_prompt = f"""你是專業求職信撰寫專家。根據以下信息生成一份高質量的英文求職信。
 
-【简历】
+【簡歷】
 {resume_context}
 
-【职位JD】
+【職位JD】
 {jd}
 
-【风格】
-{normalized_style}（可选值：professional=正式版, natural=自然版, brief=简短版）
+【風格】
+{normalized_style}（可選值：professional=正式版, natural=自然版, brief=簡短版）
 
 要求：
-1. 250-300词的求职信
-2. 突出符合JD要求的核心优势
-3. 包含2-3个量化的成就或具体例子
-4. 展现对公司和职位的深入理解
-5. 必须是完整的有格式的英文求职信，包含Dear/Sincerely等结构
+1. 250-300詞的求職信
+2. 突出符合JD要求的核心優勢
+3. 包含2-3個量化的成就或具體例子
+4. 展現對公司和職位的深入理解
+5. 必須是完整的有格式的英文求職信，包含Dear/Sincerely等結構
 
-直接输出求职信内容，不要包含任何其他文本或说明。"""
+直接輸出求職信內容，不要包含任何其他文本或說明。"""
 
     for use_json_mode in (True, False):
         kwargs = dict(
@@ -505,11 +505,11 @@ def _row_to_record(row) -> RecordOut:
 @app.post("/v1/optimize", response_model=OptimizeResp)
 def optimize(body: OptimizeReq):
     if not body.resume_text.strip() or not body.jd_text.strip():
-        raise HTTPException(status_code=400, detail="resume_text 和 jd_text 不能为空")
+        raise HTTPException(status_code=400, detail="resume_text 和 jd_text 不能爲空")
     try:
         obj = _call_gpt(body.resume_text, body.jd_text)
         if not obj:
-            raise HTTPException(status_code=500, detail="AI 返回空响应")
+            raise HTTPException(status_code=500, detail="AI 返回空響應")
 
         resp = _parse_response(obj)
         if _needs_resume_rewrite(body.resume_text, resp.optimized):
@@ -522,8 +522,8 @@ def optimize(body: OptimizeReq):
         resp.optimized = _force_quantified_bullets(resp.optimized)
         resp.analysis = _ensure_quant_actions(resp.analysis)
 
-        # 补齐 Cover Letter：优先沿用主调用结果，缺失或质量不足时才补调一次
-        # 仅当 _call_gpt 主调用结果明显缺失或存在模板化/占位痕迹时，才重新生成，避免覆盖已生成的高质量版本。
+        # 補齊 Cover Letter：優先沿用主調用結果，缺失或質量不足時才補調一次
+        # 僅當 _call_gpt 主調用結果明顯缺失或存在模板化/佔位痕跡時，才重新生成，避免覆蓋已生成的高質量版本。
         needs_cover_letter_retry = _cover_letter_needs_retry(resp.cover_letter)
         if needs_cover_letter_retry:
             try:
@@ -533,7 +533,7 @@ def optimize(body: OptimizeReq):
             except Exception as e:
                 if DEBUG:
                     print(f"Cover letter generation during optimize failed: {e}")
-                # 不中断主流程，Cover Letter 生成失败不影响简历优化结果
+                # 不中斷主流程，Cover Letter 生成失敗不影響簡歷優化結果
 
         if body.user_id and body.user_id.strip():
             record_id, created_at = _save_record(
@@ -549,24 +549,24 @@ def optimize(body: OptimizeReq):
     except Exception as e:
         print("ERROR:", repr(e))
         traceback.print_exc()
-        raise HTTPException(status_code=500, detail=f"AI 优化失败：{e}")
+        raise HTTPException(status_code=500, detail=f"AI 優化失敗：{e}")
 
 @app.post("/v1/generate-cover-letter")
 def generate_cover_letter(body: OptimizeReq):
-    """单独生成求职信（用于"重新生成"功能）"""
+    """單獨生成求職信（用於"重新生成"功能）"""
     if not body.resume_text.strip() or not body.jd_text.strip():
-        raise HTTPException(status_code=400, detail="resume_text 和 jd_text 不能为空")
+        raise HTTPException(status_code=400, detail="resume_text 和 jd_text 不能爲空")
     try:
         cover_letter = _generate_cover_letter_only(body.resume_text, body.jd_text, body.style or "professional")
         if not cover_letter:
-            raise HTTPException(status_code=500, detail="AI 未能生成求职信")
+            raise HTTPException(status_code=500, detail="AI 未能生成求職信")
         return {"cover_letter": cover_letter}
     except HTTPException:
         raise
     except Exception as e:
         print("ERROR generating cover letter:", repr(e))
         traceback.print_exc()
-        raise HTTPException(status_code=500, detail=f"求职信生成失败：{e}")
+        raise HTTPException(status_code=500, detail=f"求職信生成失敗：{e}")
 
 @app.get("/v1/records", response_model=List[RecordOut])
 def list_records(

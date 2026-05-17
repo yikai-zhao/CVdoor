@@ -5,7 +5,7 @@ import androidx.room.PrimaryKey
 import androidx.room.TypeConverter
 import androidx.room.TypeConverters
 
-/* -------- List<Int> <-> String 转换器（给 Room 用） -------- */
+/* -------- List<Int> <-> String 轉換器（給 Room 用） -------- */
 class IntListConverters {
     @TypeConverter
     fun fromString(value: String?): List<Int> =
@@ -19,7 +19,7 @@ class IntListConverters {
         list?.joinToString(",") ?: ""
 }
 
-/* -------- List<String> <-> String 转换器 -------- */
+/* -------- List<String> <-> String 轉換器 -------- */
 class StringListConverters {
     @TypeConverter
     fun fromString(value: String?): List<String> =
@@ -33,7 +33,7 @@ class StringListConverters {
         list?.joinToString("\u241f") ?: ""
 }
 
-/* -------- Room 实体：历史记录表 -------- */
+/* -------- Room 實體：歷史記錄表 -------- */
 @Entity(tableName = "optimization_records")
 @TypeConverters(IntListConverters::class)
 data class OptimizationRecordEntity(
@@ -49,14 +49,14 @@ data class OptimizationRecordEntity(
     @PrimaryKey(autoGenerate = true) val id: Long = 0L
 )
 
-/* -------- Room 实体：账户表 -------- */
+/* -------- Room 實體：賬戶表 -------- */
 @Entity(tableName = "user_account")
 data class UserAccount(
     @PrimaryKey val userId: String,
     val remainingCredits: Int = 0
 )
 
-/* -------- Room 实体：保存的简历库 -------- */
+/* -------- Room 實體：保存的簡歷庫 -------- */
 @Entity(tableName = "saved_resumes")
 data class SavedResumeEntity(
     @PrimaryKey(autoGenerate = true) val id: Long = 0L,

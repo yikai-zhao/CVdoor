@@ -33,8 +33,8 @@ fun PreSubmitCheckScreen(
     // Compute checks from result
     val atsChecks = buildList {
         addAll(result?.atsOk?.map { Triple("✓", it, true) } ?: listOf(
-            Triple("✓", "使用标准 Section 标题", true),
-            Triple("✓", "无复杂图表/表格", true)
+            Triple("✓", "使用標準 Section 標題", true),
+            Triple("✓", "無複雜圖表/表格", true)
         ))
         addAll(result?.atsIssues?.map { Triple("⚠", it, false) } ?: emptyList())
     }
@@ -42,21 +42,21 @@ fun PreSubmitCheckScreen(
     val keywordChecks = buildList {
         val matched = result?.matchedKeywords?.size ?: 0
         val missing = result?.missingKeywords?.size ?: 0
-        if (matched > 0) add(Triple("✓", "核心 JD 关键词覆盖 $matched 个", true))
-        if (missing > 0) add(Triple("⚠", "$missing 个关键词尚未体现", false))
-        else add(Triple("✓", "所有关键词均已覆盖", true))
+        if (matched > 0) add(Triple("✓", "核心 JD 關鍵詞覆蓋 $matched 個", true))
+        if (missing > 0) add(Triple("⚠", "$missing 個關鍵詞尚未體現", false))
+        else add(Triple("✓", "所有關鍵詞均已覆蓋", true))
     }
 
     val hasPlaceholders = result?.optimizedResume?.contains("[") == true
     val realityChecks = buildList {
-        add(Triple("✓", "未发现明显虚构内容", true))
-        if (hasPlaceholders) add(Triple("⚠", "检测到未填写的数据占位符", false))
-        else add(Triple("✓", "无未填写占位符", true))
+        add(Triple("✓", "未發現明顯虛構內容", true))
+        if (hasPlaceholders) add(Triple("⚠", "檢測到未填寫的數據佔位符", false))
+        else add(Triple("✓", "無未填寫佔位符", true))
     }
 
     val clChecks = listOf(
-        Triple("✓", "岗位名称一致", true),
-        Triple("✓", "经历内容与简历一致", true)
+        Triple("✓", "崗位名稱一致", true),
+        Triple("✓", "經歷內容與簡歷一致", true)
     )
 
     val atsPassed = atsChecks.all { it.third }
@@ -73,7 +73,7 @@ fun PreSubmitCheckScreen(
             IconButton(onClick = onBack) {
                 Icon(Icons.Default.ArrowBack, contentDescription = "Back", tint = TextPrimary)
             }
-            Text("投递前检查", fontSize = 18.sp, fontWeight = FontWeight.SemiBold, color = TextPrimary,
+            Text("投遞前檢查", fontSize = 18.sp, fontWeight = FontWeight.SemiBold, color = TextPrimary,
                 modifier = Modifier.weight(1f).padding(start = 4.dp))
         }
 
@@ -100,21 +100,21 @@ fun PreSubmitCheckScreen(
                     Spacer(Modifier.width(12.dp))
                     Column {
                         Text(
-                            if (allPassed) "Final Application Check — 通过" else "Final Application Check — 需处理",
+                            if (allPassed) "Final Application Check — 通過" else "Final Application Check — 需處理",
                             fontSize = 15.sp, fontWeight = FontWeight.SemiBold,
                             color = if (allPassed) AccentGreen else AccentYellow
                         )
                         Text(
-                            if (allPassed) "你的简历已可投递" else "建议处理以下问题后再导出",
+                            if (allPassed) "你的簡歷已可投遞" else "建議處理以下問題後再導出",
                             fontSize = 13.sp, color = TextSecondary
                         )
                     }
                 }
             }
 
-            CheckSection("ATS 格式检查", atsChecks)
-            CheckSection("关键词检查", keywordChecks)
-            CheckSection("真实性检查", realityChecks)
+            CheckSection("ATS 格式檢查", atsChecks)
+            CheckSection("關鍵詞檢查", keywordChecks)
+            CheckSection("真實性檢查", realityChecks)
             CheckSection("Cover Letter 一致性", clChecks)
 
             if (!allPassed) {
@@ -124,7 +124,7 @@ fun PreSubmitCheckScreen(
                         .background(NightElevated)
                         .padding(14.dp)
                 ) {
-                    Text("建议先填写真实数据或删除占位符，再导出最终版本。",
+                    Text("建議先填寫真實數據或刪除佔位符，再導出最終版本。",
                         fontSize = 13.sp, color = TextSecondary, lineHeight = 20.sp)
                 }
             }
@@ -133,7 +133,7 @@ fun PreSubmitCheckScreen(
 
         // Bottom actions
         Column(
-            modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 12.dp),
+            modifier = Modifier.fillMaxWidth().navigationBarsPadding().padding(horizontal = 16.dp, vertical = 12.dp),
             verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
             if (!allPassed) {
@@ -146,7 +146,7 @@ fun PreSubmitCheckScreen(
                 ) {
                     Icon(Icons.Default.Edit, contentDescription = null, modifier = Modifier.size(16.dp))
                     Spacer(Modifier.width(6.dp))
-                    Text("去填写数据", fontSize = 14.sp)
+                    Text("去填寫數據", fontSize = 14.sp)
                 }
 
                 OutlinedButton(
@@ -165,11 +165,11 @@ fun PreSubmitCheckScreen(
                     modifier = Modifier.fillMaxWidth().height(44.dp),
                     shape = RoundedCornerShape(10.dp)
                 ) {
-                    Text("删除未填写建议并导出", fontSize = 14.sp)
+                    Text("刪除未填寫建議並導出", fontSize = 14.sp)
                 }
             }
             GradientCta(
-                text = if (allPassed) "导出最终版本" else "继续导出优化版",
+                text = if (allPassed) "導出最終版本" else "繼續導出優化版",
                 onClick = { showExportDialog = true }
             )
         }

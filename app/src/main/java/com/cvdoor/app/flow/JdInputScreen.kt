@@ -60,7 +60,7 @@ fun JdInputScreen(
                     )
                 }
                 Text(
-                    "粘贴岗位描述",
+                    "粘貼崗位描述",
                     fontSize = 20.sp,
                     fontWeight = FontWeight.SemiBold,
                     color = TextPrimary,
@@ -77,34 +77,34 @@ fun JdInputScreen(
             ) {
                 Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
                     Text(
-                        "当前简历：${state.resumeName.ifBlank { state.resumeFileName.ifBlank { "未命名简历" } }}",
+                        "當前簡歷：${state.resumeName.ifBlank { state.resumeFileName.ifBlank { "未命名簡歷" } }}",
                         fontSize = 12.sp,
                         color = TextSecondary
                     )
                     Text(
-                        "目标行业：${state.industry.ifBlank { "未选择" }}",
+                        "目標行業：${state.industry.ifBlank { "未選擇" }}",
                         fontSize = 13.sp,
                         color = TextPrimary
                     )
                     Text(
-                        "目标地区：${state.region.ifBlank { "未选择" }}",
+                        "目標地區：${state.region.ifBlank { "未選擇" }}",
                         fontSize = 13.sp,
                         color = TextPrimary
                     )
                     Text(
-                        "目标岗位：${state.targetRole.ifBlank { "未填写" }}",
+                        "目標崗位：${state.targetRole.ifBlank { "未填寫" }}",
                         fontSize = 13.sp,
                         color = TextPrimary
                     )
                     Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-                        TextButton(onClick = onChangeResume) { Text("更换简历", color = NeonBlueEnd, fontSize = 12.sp) }
-                        TextButton(onClick = onChangeIndustry) { Text("修改行业", color = NeonBlueEnd, fontSize = 12.sp) }
+                        TextButton(onClick = onChangeResume) { Text("更換簡歷", color = NeonBlueEnd, fontSize = 12.sp) }
+                        TextButton(onClick = onChangeIndustry) { Text("修改行業", color = NeonBlueEnd, fontSize = 12.sp) }
                     }
                 }
             }
 
             Text(
-                "目标岗位名称",
+                "目標崗位名稱",
                 fontSize = 14.sp,
                 fontWeight = FontWeight.Medium,
                 color = TextSecondary
@@ -135,7 +135,7 @@ fun JdInputScreen(
                     .heightIn(min = 220.dp),
                 placeholder = {
                     Text(
-                        "粘贴职位描述内容…",
+                        "粘貼職位描述內容…",
                         color = TextSecondary.copy(0.5f),
                         fontSize = 14.sp
                     )
@@ -153,13 +153,13 @@ fun JdInputScreen(
                 textStyle = LocalTextStyle.current.copy(fontSize = 14.sp, lineHeight = 22.sp),
                 isError = jdShort,
                 supportingText = if (jdShort) {
-                    { Text("建议提供更完整的岗位描述，以获得更准确的优化结果", color = AccentYellow, fontSize = 12.sp) }
+                    { Text("建議提供更完整的崗位描述，以獲得更準確的優化結果", color = AccentYellow, fontSize = 12.sp) }
                 } else null
             )
 
             // Job link (optional)
             Text(
-                "岗位链接（可选）",
+                "崗位鏈接（可選）",
                 fontSize = 14.sp,
                 fontWeight = FontWeight.Medium,
                 color = TextSecondary
@@ -195,16 +195,16 @@ fun JdInputScreen(
                     .padding(14.dp)
             ) {
                 Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
-                    Text("本次将优化：", color = TextPrimary, fontSize = 13.sp)
+                    Text("本次將優化：", color = TextPrimary, fontSize = 13.sp)
                     listOf(
-                        "ATS 关键词匹配", "ATS 友好格式", "职责转成果表达", "真实数据补充引导",
-                        "简历结构重排", "Cover Letter 一致性", "投递前检查"
+                        "ATS 關鍵詞匹配", "ATS 友好格式", "職責轉成果表達", "真實數據補充引導",
+                        "簡歷結構重排", "Cover Letter 一致性", "投遞前檢查"
                     ).forEach {
                         Text("[✓] $it", color = TextSecondary, fontSize = 12.sp)
                     }
                     Spacer(Modifier.height(4.dp))
-                    Text("本次完整优化：活动价 HK$4.9（原价 HK$9.9）", color = AccentGreen, fontSize = 12.sp)
-                    Text("下一步将展示示例优化效果。支付后才会生成你的专属结果。", color = TextSecondary, fontSize = 12.sp)
+                    Text("本次完整優化：活動價 HK$4.9（原價 HK$9.9）", color = AccentGreen, fontSize = 12.sp)
+                    Text("下一步將展示示例優化效果。支付後纔會生成你的專屬結果。", color = TextSecondary, fontSize = 12.sp)
                 }
             }
 
@@ -235,7 +235,7 @@ fun JdInputScreen(
                         contentAlignment = Alignment.Center
                     ) {
                         Text(
-                            "查看 ATS 优化效果预览",
+                            "查看 ATS 優化效果預覽",
                             fontSize = 16.sp,
                             fontWeight = FontWeight.SemiBold,
                             color = Color.White
@@ -243,7 +243,7 @@ fun JdInputScreen(
                     }
                 } else {
                     Text(
-                        "查看 ATS 优化效果预览",
+                        "查看 ATS 優化效果預覽",
                         fontSize = 16.sp,
                         color = TextSecondary.copy(0.4f)
                     )

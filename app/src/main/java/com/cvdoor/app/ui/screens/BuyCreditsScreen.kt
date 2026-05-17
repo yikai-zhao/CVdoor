@@ -66,7 +66,7 @@ fun BuyCreditsScreen(
                 modifier = Modifier
                     .padding(inner)
                     .fillMaxSize()
-                    .verticalScroll(rememberScrollState())  // ✅ 可滚动，最后一项不会被裁掉
+                    .verticalScroll(rememberScrollState())  // ✅ 可滾動，最後一項不會被裁掉
                     .padding(20.dp),
                 verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
@@ -86,7 +86,7 @@ fun BuyCreditsScreen(
                     color = TextSecondary,
                     fontSize = 12.sp
                 )
-                Spacer(Modifier.height(50.dp)) // ✅ 额外底部空间，避免被导航栏挡住
+                Spacer(Modifier.height(50.dp)) // ✅ 額外底部空間，避免被導航欄擋住
             }
         }
     }
@@ -101,7 +101,7 @@ fun BuyCreditsScreen(
                 TextButton(
                     onClick = {
                         pending = null
-                        vm.addCredits(plan.credits)  // ✅ 支付成功后加次数
+                        vm.addCredits(plan.credits)  // ✅ 支付成功後加次數
                         onBack()
                     }
                 ) { Text("Buy Now") }

@@ -47,7 +47,7 @@ fun DemoPreviewScreen(
                     IconButton(onClick = onBack) {
                         Icon(Icons.Default.ArrowBack, contentDescription = "Back", tint = TextPrimary)
                     }
-                    Text("ATS 优化效果预览", fontSize = 18.sp, fontWeight = FontWeight.SemiBold,
+                    Text("ATS 優化效果預覽", fontSize = 18.sp, fontWeight = FontWeight.SemiBold,
                         color = TextPrimary, modifier = Modifier.weight(1f).padding(start = 4.dp))
                 }
             }
@@ -62,7 +62,7 @@ fun DemoPreviewScreen(
                         .padding(14.dp)
                 ) {
                     Text(
-                        "以下为示例展示。支付后，系统将根据你的简历、行业和 JD 生成专属结果。",
+                        "以下爲示例展示。支付後，系統將根據你的簡歷、行業和 JD 生成專屬結果。",
                         fontSize = 13.sp, color = AccentYellow, lineHeight = 20.sp
                     )
                 }
@@ -85,12 +85,12 @@ fun DemoPreviewScreen(
                             Text("/ 次", fontSize = 14.sp, color = TextSecondary,
                                 modifier = Modifier.padding(bottom = 4.dp))
                             Spacer(Modifier.weight(1f))
-                            Text("原价 HK$9.9", fontSize = 13.sp, color = TextSecondary,
+                            Text("原價 HK$9.9", fontSize = 13.sp, color = TextSecondary,
                                 style = LocalTextStyle.current.copy(
                                     textDecoration = androidx.compose.ui.text.style.TextDecoration.LineThrough
                                 ))
                         }
-                        Text("包含：ATS 优化 + 完整简历 + Cover Letter",
+                        Text("包含：ATS 優化 + 完整簡歷 + Cover Letter",
                             fontSize = 13.sp, color = TextSecondary, modifier = Modifier.padding(top = 4.dp))
                     }
                 }
@@ -98,7 +98,7 @@ fun DemoPreviewScreen(
 
             // ATS Score demo
             item {
-                DemoCard("示例 ATS 匹配评分") {
+                DemoCard("示例 ATS 匹配評分") {
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Box(
                             modifier = Modifier.size(72.dp).clip(RoundedCornerShape(50))
@@ -113,7 +113,7 @@ fun DemoPreviewScreen(
                             Text("/ 100", fontSize = 14.sp, color = TextSecondary)
                             Text("ATS 友好度：High", fontSize = 14.sp, color = AccentGreen,
                                 fontWeight = FontWeight.SemiBold)
-                            Text("示例岗位：${state.targetRole.ifBlank { "Marketing Assistant" }}",
+                            Text("示例崗位：${state.targetRole.ifBlank { "Marketing Assistant" }}",
                                 fontSize = 13.sp, color = TextSecondary)
                         }
                     }
@@ -122,26 +122,26 @@ fun DemoPreviewScreen(
 
             // Keyword match demo
             item {
-                DemoCard("示例行业关键词匹配") {
+                DemoCard("示例行業關鍵詞匹配") {
                     val demoMatched = industryDef?.sampleKeywords?.take(3)
                         ?: listOf("Social Media", "Content Writing", "Customer Service")
                     val demoPartial = listOf("SEO", "Campaign Support")
                     val demoMissing = listOf("CRM", "Google Analytics")
 
                     Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
-                        KeywordGroup("✅ 已明确体现", demoMatched, AccentGreen.copy(alpha = 0.15f), AccentGreen)
-                        KeywordGroup("⚠ 建议加强", demoPartial, AccentYellow.copy(alpha = 0.12f), AccentYellow)
-                        KeywordGroup("❌ 尚未体现", demoMissing, Color.Red.copy(alpha = 0.1f), Color(0xFFFF6B6B))
+                        KeywordGroup("✅ 已明確體現", demoMatched, AccentGreen.copy(alpha = 0.15f), AccentGreen)
+                        KeywordGroup("⚠ 建議加強", demoPartial, AccentYellow.copy(alpha = 0.12f), AccentYellow)
+                        KeywordGroup("❌ 尚未體現", demoMissing, Color.Red.copy(alpha = 0.1f), Color(0xFFFF6B6B))
                     }
                     Spacer(Modifier.height(8.dp))
-                    Text("仅展示部分关键词，完整分析将在支付后根据你的 JD 生成。",
+                    Text("僅展示部分關鍵詞，完整分析將在支付後根據你的 JD 生成。",
                         fontSize = 12.sp, color = TextSecondary)
                 }
             }
 
             // Before/After demo
             item {
-                DemoCard("职责转成果示例") {
+                DemoCard("職責轉成果示例") {
                     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                         BeforeAfterRow(
                             before = "Responsible for posting social media content.",
@@ -153,32 +153,32 @@ fun DemoPreviewScreen(
 
             // Real data prompts demo
             item {
-                DemoCard("真实数据补充引导示例") {
-                    Text("不编造数字，只引导你填写真实数据：",
+                DemoCard("真實數據補充引導示例") {
+                    Text("不編造數字，只引導你填寫真實數據：",
                         fontSize = 13.sp, color = TextSecondary, modifier = Modifier.padding(bottom = 8.dp))
                     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                        DataPromptRow("每周发布内容数量：")
-                        DataPromptRow("平均互动量：")
-                        DataPromptRow("粉丝增长：", suffix = "%")
+                        DataPromptRow("每週發佈內容數量：")
+                        DataPromptRow("平均互動量：")
+                        DataPromptRow("粉絲增長：", suffix = "%")
                     }
                 }
             }
 
             // ATS format demo
             item {
-                DemoCard("ATS 友好格式检查示例") {
+                DemoCard("ATS 友好格式檢查示例") {
                     Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
-                        CheckItem("✓", "使用标准 Section 标题", AccentGreen)
-                        CheckItem("✓", "无复杂表格", AccentGreen)
-                        CheckItem("✓", "关键词可被系统读取", AccentGreen)
-                        CheckItem("✓", "Bullet 长度适合 ATS 筛选", AccentGreen)
+                        CheckItem("✓", "使用標準 Section 標題", AccentGreen)
+                        CheckItem("✓", "無複雜表格", AccentGreen)
+                        CheckItem("✓", "關鍵詞可被系統讀取", AccentGreen)
+                        CheckItem("✓", "Bullet 長度適合 ATS 篩選", AccentGreen)
                     }
                 }
             }
 
             // Resume structure preview
             item {
-                DemoCard("示例优化简历结构") {
+                DemoCard("示例優化簡歷結構") {
                     Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
                         listOf("Professional Summary", "Key Skills", "Work Experience",
                             "Education", "Certifications").forEach { section ->
@@ -195,9 +195,9 @@ fun DemoPreviewScreen(
 
             // Cover letter preview
             item {
-                DemoCard("示例 Cover Letter 预览") {
+                DemoCard("示例 Cover Letter 預覽") {
                     Text(
-                        "Dear Hiring Manager,\n\nI am writing to express my interest in the ${state.targetRole.ifBlank { "position" }} role at your esteemed organization. With my background in ${state.industry.ifBlank { "the field" }}, I am confident I can contribute meaningfully to your team...\n\n[完整内容将在支付后生成]",
+                        "Dear Hiring Manager,\n\nI am writing to express my interest in the ${state.targetRole.ifBlank { "position" }} role at your esteemed organization. With my background in ${state.industry.ifBlank { "the field" }}, I am confident I can contribute meaningfully to your team...\n\n[完整內容將在支付後生成]",
                         fontSize = 13.sp, color = TextSecondary, lineHeight = 20.sp
                     )
                 }
@@ -205,11 +205,11 @@ fun DemoPreviewScreen(
 
             // Pre-submit check demo
             item {
-                DemoCard("投递前检查示例") {
+                DemoCard("投遞前檢查示例") {
                     Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
-                        CheckItem("✓", "联系方式完整", AccentGreen)
-                        CheckItem("✓", "无未填写占位符", AccentGreen)
-                        CheckItem("✓", "Cover Letter 与 JD 一致", AccentGreen)
+                        CheckItem("✓", "聯繫方式完整", AccentGreen)
+                        CheckItem("✓", "無未填寫佔位符", AccentGreen)
+                        CheckItem("✓", "Cover Letter 與 JD 一致", AccentGreen)
                     }
                 }
             }
@@ -223,12 +223,12 @@ fun DemoPreviewScreen(
                         .padding(16.dp)
                 ) {
                     Column {
-                        Text("支付后你将获得：", fontSize = 15.sp, fontWeight = FontWeight.SemiBold,
+                        Text("支付後你將獲得：", fontSize = 15.sp, fontWeight = FontWeight.SemiBold,
                             color = TextPrimary, modifier = Modifier.padding(bottom = 12.dp))
                         val items = listOf(
-                            "专属 ATS 匹配评分", "完整 JD 关键词分析", "ATS 友好格式优化",
-                            "职责转成果表达", "真实数据补充引导", "完整优化简历",
-                            "Cover Letter", "投递前检查", "Word 导出", "自动保存历史记录"
+                            "專屬 ATS 匹配評分", "完整 JD 關鍵詞分析", "ATS 友好格式優化",
+                            "職責轉成果表達", "真實數據補充引導", "完整優化簡歷",
+                            "Cover Letter", "投遞前檢查", "Word 導出", "自動保存歷史記錄"
                         )
                         items.forEach { item ->
                             Row(verticalAlignment = Alignment.CenterVertically,
@@ -259,11 +259,11 @@ fun DemoPreviewScreen(
                     horizontalArrangement = Arrangement.Center,
                     modifier = Modifier.fillMaxWidth().padding(bottom = 8.dp)
                 ) {
-                    Text("活动价 ", fontSize = 13.sp, color = TextSecondary)
+                    Text("活動價 ", fontSize = 13.sp, color = TextSecondary)
                     Text("HK$4.9", fontSize = 16.sp, fontWeight = FontWeight.Bold, color = AccentGreen)
-                    Text("  原价 HK$9.9", fontSize = 13.sp, color = TextSecondary)
+                    Text("  原價 HK$9.9", fontSize = 13.sp, color = TextSecondary)
                 }
-                GradientCta("立即生成我的专属 ATS 结果", onClick = onPayNow)
+                GradientCta("立即生成我的專屬 ATS 結果", onClick = onPayNow)
             }
         }
     }
@@ -294,7 +294,7 @@ private fun BeforeAfterRow(before: String, after: String) {
                 .padding(10.dp)
         ) {
             Column {
-                Text("优化前", fontSize = 11.sp, color = Color(0xFFFF6B6B), fontWeight = FontWeight.SemiBold)
+                Text("優化前", fontSize = 11.sp, color = Color(0xFFFF6B6B), fontWeight = FontWeight.SemiBold)
                 Text(before, fontSize = 13.sp, color = TextSecondary, modifier = Modifier.padding(top = 4.dp))
             }
         }
@@ -307,7 +307,7 @@ private fun BeforeAfterRow(before: String, after: String) {
                 .padding(10.dp)
         ) {
             Column {
-                Text("优化后", fontSize = 11.sp, color = AccentGreen, fontWeight = FontWeight.SemiBold)
+                Text("優化後", fontSize = 11.sp, color = AccentGreen, fontWeight = FontWeight.SemiBold)
                 Text(after, fontSize = 13.sp, color = TextPrimary, modifier = Modifier.padding(top = 4.dp))
             }
         }

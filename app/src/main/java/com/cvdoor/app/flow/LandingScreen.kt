@@ -70,7 +70,7 @@ fun LandingScreen(onStart: () -> Unit) {
             Spacer(Modifier.height(8.dp))
 
             Text(
-                text = "让你的简历\n更容易通过筛选",
+                text = "讓你的簡歷\n更容易通過篩選",
                 fontSize = 26.sp,
                 fontWeight = FontWeight.Bold,
                 color = TextPrimary,
@@ -79,7 +79,7 @@ fun LandingScreen(onStart: () -> Unit) {
             )
 
             Text(
-                text = "ATS优化 + 自动生成求职信",
+                text = "ATS優化 + 自動生成求職信",
                 fontSize = 16.sp,
                 color = TextSecondary,
                 textAlign = TextAlign.Center
@@ -91,7 +91,7 @@ fun LandingScreen(onStart: () -> Unit) {
             Row(
                 horizontalArrangement = Arrangement.spacedBy(10.dp)
             ) {
-                listOf("📄 简历优化", "🎯 匹配评分", "✉️ 求职信").forEach { label ->
+                listOf("📄 簡歷優化", "🎯 匹配評分", "✉️ 求職信").forEach { label ->
                     Box(
                         modifier = Modifier
                             .clip(RoundedCornerShape(20.dp))
@@ -123,7 +123,7 @@ fun LandingScreen(onStart: () -> Unit) {
                     contentAlignment = Alignment.Center
                 ) {
                     Text(
-                        "开始优化",
+                        "開始優化",
                         fontSize = 18.sp,
                         fontWeight = FontWeight.Bold,
                         color = Color.White
@@ -132,7 +132,7 @@ fun LandingScreen(onStart: () -> Unit) {
             }
 
             Text(
-                text = "支持上传文件或粘贴内容",
+                text = "支持上傳文件或粘貼內容",
                 fontSize = 13.sp,
                 color = TextSecondary.copy(alpha = 0.7f),
                 textAlign = TextAlign.Center

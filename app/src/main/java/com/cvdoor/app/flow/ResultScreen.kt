@@ -58,9 +58,9 @@ fun ResultScreen(
                 IconButton(onClick = onBack) {
                     Icon(Icons.AutoMirrored.Outlined.ArrowBack, contentDescription = "返回", tint = TextSecondary)
                 }
-                Text("优化结果", fontSize = 20.sp, fontWeight = FontWeight.SemiBold, color = TextPrimary)
+                Text("優化結果", fontSize = 20.sp, fontWeight = FontWeight.SemiBold, color = TextPrimary)
                 Spacer(Modifier.weight(1f))
-                TextButton(onClick = onReset) { Text("重新开始", color = NeonBlueEnd, fontSize = 13.sp) }
+                TextButton(onClick = onReset) { Text("重新開始", color = NeonBlueEnd, fontSize = 13.sp) }
             }
 
             // ── Saved banner ──
@@ -73,7 +73,7 @@ fun ResultScreen(
             ) {
                 Icon(Icons.Outlined.CheckCircle, contentDescription = null, tint = AccentGreen, modifier = Modifier.size(14.dp))
                 Spacer(Modifier.width(6.dp))
-                Text("已自动保存到历史记录", fontSize = 12.sp, color = AccentGreen)
+                Text("已自動保存到歷史記錄", fontSize = 12.sp, color = AccentGreen)
             }
 
             Column(
@@ -90,7 +90,7 @@ fun ResultScreen(
 
                 Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End) {
                     TextButton(onClick = onCoverLetter) {
-                        Text("打开 Cover Letter 页", color = NeonBlueEnd, fontSize = 12.sp)
+                        Text("打開 Cover Letter 頁", color = NeonBlueEnd, fontSize = 12.sp)
                     }
                 }
 
@@ -101,7 +101,7 @@ fun ResultScreen(
                         .background(NightElevated).padding(16.dp)
                 ) {
                     Text(
-                        text = tabText.ifBlank { "（暂无内容）" },
+                        text = tabText.ifBlank { "（暫無內容）" },
                         fontSize = 14.sp,
                         color = if (tabText.isNotBlank()) TextPrimary else TextSecondary,
                         lineHeight = 22.sp
@@ -113,7 +113,7 @@ fun ResultScreen(
                     Button(
                         onClick = {
                             clip.setText(AnnotatedString(tabText))
-                            Toast.makeText(ctx, "已复制", Toast.LENGTH_SHORT).show()
+                            Toast.makeText(ctx, "已複製", Toast.LENGTH_SHORT).show()
                         },
                         enabled = tabText.isNotBlank(),
                         modifier = Modifier.weight(1f).height(44.dp),
@@ -133,7 +133,7 @@ fun ResultScreen(
                                 Icon(Icons.Outlined.ContentCopy, contentDescription = null,
                                     modifier = Modifier.size(15.dp),
                                     tint = if (tabText.isNotBlank()) Color.White else TextSecondary)
-                                Text("复制", fontWeight = FontWeight.Medium,
+                                Text("複製", fontWeight = FontWeight.Medium,
                                     color = if (tabText.isNotBlank()) Color.White else TextSecondary)
                             }
                         }
@@ -150,7 +150,7 @@ fun ResultScreen(
                         Row(horizontalArrangement = Arrangement.spacedBy(6.dp), verticalAlignment = Alignment.CenterVertically) {
                             Icon(Icons.Outlined.Share, contentDescription = null, modifier = Modifier.size(15.dp),
                                 tint = if (tabText.isNotBlank()) NeonBlueEnd else TextSecondary)
-                            Text("导出", color = if (tabText.isNotBlank()) NeonBlueEnd else TextSecondary)
+                            Text("導出", color = if (tabText.isNotBlank()) NeonBlueEnd else TextSecondary)
                         }
                     }
                 }
@@ -162,13 +162,14 @@ fun ResultScreen(
             Row(
                 modifier = Modifier.fillMaxWidth()
                     .background(NightElevated)
+                    .navigationBarsPadding()
                     .padding(horizontal = 12.dp, vertical = 10.dp),
                 horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                BottomAction(icon = Icons.Outlined.Edit, label = "编辑", onClick = onEdit, modifier = Modifier.weight(1f))
-                BottomAction(icon = Icons.Outlined.AddChart, label = "填数据", onClick = onFillData, modifier = Modifier.weight(1f))
-                BottomAction(icon = Icons.Outlined.TaskAlt, label = "投递检查", onClick = onPreSubmit, modifier = Modifier.weight(1f))
-                BottomAction(icon = Icons.Outlined.Share, label = "导出", onClick = { showExportDialog = true }, modifier = Modifier.weight(1f))
+                BottomAction(icon = Icons.Outlined.Edit, label = "編輯", onClick = onEdit, modifier = Modifier.weight(1f))
+                BottomAction(icon = Icons.Outlined.AddChart, label = "填數據", onClick = onFillData, modifier = Modifier.weight(1f))
+                BottomAction(icon = Icons.Outlined.TaskAlt, label = "投遞檢查", onClick = onPreSubmit, modifier = Modifier.weight(1f))
+                BottomAction(icon = Icons.Outlined.Share, label = "導出", onClick = { showExportDialog = true }, modifier = Modifier.weight(1f))
             }
         }
 
@@ -237,8 +238,8 @@ private fun ScoreCard(result: FlowResult, expanded: Boolean, onToggle: () -> Uni
         when {
             score >= 90 -> "ATS 友好度：High"
             score >= 75 -> "ATS 友好度：Medium"
-            score >= 60 -> "ATS 友好度：Medium — 可改进"
-            else -> "ATS 友好度：Low — 需改进"
+            score >= 60 -> "ATS 友好度：Medium — 可改進"
+            else -> "ATS 友好度：Low — 需改進"
         }
     }
 
@@ -253,7 +254,7 @@ private fun ScoreCard(result: FlowResult, expanded: Boolean, onToggle: () -> Uni
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
-                Text("匹配评分", fontSize = 16.sp, fontWeight = FontWeight.SemiBold, color = TextPrimary)
+                Text("匹配評分", fontSize = 16.sp, fontWeight = FontWeight.SemiBold, color = TextPrimary)
                 Icon(if (expanded) Icons.Outlined.ExpandLess else Icons.Outlined.ExpandMore,
                     contentDescription = null, tint = TextSecondary)
             }
@@ -277,13 +278,13 @@ private fun ScoreCard(result: FlowResult, expanded: Boolean, onToggle: () -> Uni
                     if (result.atsOk.isNotEmpty()) {
                         Box(modifier = Modifier.clip(RoundedCornerShape(6.dp))
                             .background(AccentGreen.copy(alpha = 0.15f)).padding(horizontal = 8.dp, vertical = 4.dp)) {
-                            Text("✓ ${result.atsOk.size} 项通过", fontSize = 11.sp, color = AccentGreen)
+                            Text("✓ ${result.atsOk.size} 項通過", fontSize = 11.sp, color = AccentGreen)
                         }
                     }
                     if (result.atsIssues.isNotEmpty()) {
                         Box(modifier = Modifier.clip(RoundedCornerShape(6.dp))
                             .background(AccentYellow.copy(alpha = 0.15f)).padding(horizontal = 8.dp, vertical = 4.dp)) {
-                            Text("⚠ ${result.atsIssues.size} 项需注意", fontSize = 11.sp, color = AccentYellow)
+                            Text("⚠ ${result.atsIssues.size} 項需注意", fontSize = 11.sp, color = AccentYellow)
                         }
                     }
                 }
@@ -294,13 +295,13 @@ private fun ScoreCard(result: FlowResult, expanded: Boolean, onToggle: () -> Uni
                 horizontalArrangement = Arrangement.Center,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Text(if (expanded) "收起详情  ∧" else "展开查看详情  ∨", fontSize = 13.sp, color = NeonBlueEnd)
+                Text(if (expanded) "收起詳情  ∧" else "展開查看詳情  ∨", fontSize = 13.sp, color = NeonBlueEnd)
             }
 
             AnimatedVisibility(visible = expanded) {
                 Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
                     if (result.matchedKeywords.isNotEmpty()) {
-                        KeywordSection("已匹配关键词", result.matchedKeywords,
+                        KeywordSection("已匹配關鍵詞", result.matchedKeywords,
                             AccentGreen.copy(0.15f), AccentGreen)
                     }
                     if (result.partialKeywords.isNotEmpty()) {
@@ -308,12 +309,12 @@ private fun ScoreCard(result: FlowResult, expanded: Boolean, onToggle: () -> Uni
                             AccentYellow.copy(0.15f), AccentYellow)
                     }
                     if (result.missingKeywords.isNotEmpty()) {
-                        KeywordSection("缺失关键词", result.missingKeywords,
+                        KeywordSection("缺失關鍵詞", result.missingKeywords,
                             NeonPink.copy(0.12f), NeonPink)
                     }
                     if (result.dimScores.isNotEmpty()) {
                         Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                            Text("维度得分", fontSize = 14.sp, fontWeight = FontWeight.SemiBold, color = TextPrimary)
+                            Text("維度得分", fontSize = 14.sp, fontWeight = FontWeight.SemiBold, color = TextPrimary)
                             result.dimScores.forEach { (dim, s) ->
                                 Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
                                     Text(dim, fontSize = 12.sp, color = TextSecondary, modifier = Modifier.width(90.dp))
@@ -331,7 +332,7 @@ private fun ScoreCard(result: FlowResult, expanded: Boolean, onToggle: () -> Uni
                     }
                     if (result.suggestions.isNotEmpty()) {
                         Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
-                            Text("优化建议", fontSize = 14.sp, fontWeight = FontWeight.SemiBold, color = TextPrimary)
+                            Text("優化建議", fontSize = 14.sp, fontWeight = FontWeight.SemiBold, color = TextPrimary)
                             result.suggestions.forEach { s ->
                                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.fillMaxWidth()) {
                                     Text("•", color = NeonBlueEnd, fontSize = 14.sp)
@@ -351,7 +352,7 @@ private fun ScoreCard(result: FlowResult, expanded: Boolean, onToggle: () -> Uni
 @Composable
 private fun TabSelector(selectedTab: Int, onSelect: (Int) -> Unit) {
     Row(modifier = Modifier.fillMaxWidth().clip(RoundedCornerShape(14.dp)).background(NightElevated).padding(4.dp)) {
-        listOf("优化简历", "Cover Letter").forEachIndexed { idx, label ->
+        listOf("優化簡歷", "Cover Letter").forEachIndexed { idx, label ->
             val active = idx == selectedTab
             Box(
                 modifier = Modifier.weight(1f).clip(RoundedCornerShape(12.dp))

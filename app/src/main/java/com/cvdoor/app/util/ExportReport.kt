@@ -12,9 +12,9 @@ import java.io.FileOutputStream
 import java.text.SimpleDateFormat
 import java.util.*
 
-/** 将“最近一次优化”导出为 PDF 并唤起系统分享面板 */
+/** 將“最近一次優化”導出爲 PDF 並喚起系統分享面板 */
 fun exportOptimizationReportPdf(context: Context, rec: OptimizationRecord) {
-    // A4: 595 x 842 pt（72dpi），简单排版
+    // A4: 595 x 842 pt（72dpi），簡單排版
     val doc = PdfDocument()
     val pageInfo = PdfDocument.PageInfo.Builder(595, 842, 1).create()
     val page = doc.startPage(pageInfo)
@@ -45,7 +45,7 @@ fun exportOptimizationReportPdf(context: Context, rec: OptimizationRecord) {
     }
     y += 10f
 
-    // 摘要（避免把整篇大文本写进 PDF）
+    // 摘要（避免把整篇大文本寫進 PDF）
     val resumeSnippet = rec.resumeText.replace("\n", " ").take(200)
     val jdSnippet = rec.jdText.replace("\n", " ").take(200)
 
