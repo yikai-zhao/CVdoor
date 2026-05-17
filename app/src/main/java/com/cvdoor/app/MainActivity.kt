@@ -188,6 +188,8 @@ fun CVATSApp() {
 
         composable("data_supplement") {
             DataSupplementScreen(
+                industryId = flowState.industryId,
+                vm = flowVm,
                 onBack = { nav.popBackStack() },
                 onSaveAndApply = { nav.navigate("result") { popUpTo("result") { inclusive = true } } },
                 onSkip = { nav.popBackStack() }

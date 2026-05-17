@@ -459,5 +459,37 @@ class FlowViewModel(app: Application) : AndroidViewModel(app) {
 
     fun retry() { _state.update { it.copy(phase = FlowPhase.JD_READY, errorMsg = "") } }
 
+    /**
+     * Replace [placeholder] tokens in the optimized resume (and cover letter) with the
+     * real values the user has just entered in DataSupplementScreen.
+     * Replacement is positional: the Nth non-blank value fills the Nth [token] found.
+     */
+    fun applyDataSupplement(values: List<String>) {
+        _state.update { current ->
+            val r = current.result ?: return@update current
+            val nonBlankValues = values.filter { it.isNotBlank() }
+            if (nonBlankValues.isEmpty()) return@update current
+
+            val placeholderRegex = Regex("""\[[^\]]+\]""")
+
+            fun applyTo(text: String): String {
+                var idx = 0
+                return placeholderRegex.replace(text) { match ->
+                    val replacement = nonBlankValues.getOrNull(idx)
+                    if (replacement != null) { idx++; replacement } else match.value
+                }
+            }
+
+            val updatedResume = applyTo(r.optimizedResume)
+            val updatedCover = applyTo(
+                current.editedCoverLetter.ifBlank { r.coverLetter }
+            )
+            current.copy(
+                result = r.copy(optimizedResume = updatedResume, coverLetter = updatedCover),
+                editedCoverLetter = updatedCover
+            )
+        }
+    }
+
     fun reset() { optimizeJob?.cancel(); _state.value = FlowUiState() }
 }

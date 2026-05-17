@@ -54,10 +54,14 @@ fun PreSubmitCheckScreen(
         else add(Triple("✓", "无未填写占位符", true))
     }
 
-    val clChecks = listOf(
-        Triple("✓", "岗位名称一致", true),
-        Triple("✓", "经历内容与简历一致", true)
-    )
+    val clChecks = buildList {
+        val cl = state.editedCoverLetter.ifBlank { result?.coverLetter.orEmpty() }
+        val roleMatches = state.targetRole.isNotBlank() &&
+            cl.contains(state.targetRole, ignoreCase = true)
+        add(Triple(if (roleMatches) "✓" else "⚠", "岗位名称一致", roleMatches))
+        val clNonEmpty = cl.isNotBlank()
+        add(Triple(if (clNonEmpty) "✓" else "⚠", "经历内容与简历一致", clNonEmpty))
+    }
 
     val atsPassed = atsChecks.all { it.third }
     val keyPassed = keywordChecks.all { it.third }
