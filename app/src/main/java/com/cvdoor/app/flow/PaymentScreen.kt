@@ -107,7 +107,7 @@ fun PaymentScreen(
                     Text("活动价", fontSize = 13.sp, color = TextSecondary)
                     Text(displayPrice, fontSize = 42.sp, fontWeight = FontWeight.Black, color = AccentGreen)
                     Row(verticalAlignment = Alignment.CenterVertically) {
-                        Text("原价 HK$9.9", fontSize = 14.sp, color = TextSecondary,
+                        Text("原价 ${BillingManager.PRICE_ORIGINAL}", fontSize = 14.sp, color = TextSecondary,
                             style = LocalTextStyle.current.copy(
                                 textDecoration = androidx.compose.ui.text.style.TextDecoration.LineThrough
                             ))
