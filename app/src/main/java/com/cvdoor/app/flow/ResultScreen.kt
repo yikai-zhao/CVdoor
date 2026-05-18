@@ -76,6 +76,16 @@ fun ResultScreen(
                 Text("已自动保存到历史记录", fontSize = 12.sp, color = AccentGreen)
             }
 
+            // ── Fixed tab bar ──
+            Column(modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 4.dp)) {
+                TabSelector(selectedTab = selectedTab, onSelect = { selectedTab = it })
+                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End) {
+                    TextButton(onClick = onCoverLetter) {
+                        Text("打开 Cover Letter 页", color = NeonBlueEnd, fontSize = 12.sp)
+                    }
+                }
+            }
+
             Column(
                 modifier = Modifier.weight(1f).verticalScroll(scroll).padding(horizontal = 16.dp),
                 verticalArrangement = Arrangement.spacedBy(14.dp)
@@ -84,15 +94,6 @@ fun ResultScreen(
 
                 // ── Score Card ──
                 ScoreCard(result = result, expanded = scoreExpanded, onToggle = { scoreExpanded = !scoreExpanded })
-
-                // ── Tabs ──
-                TabSelector(selectedTab = selectedTab, onSelect = { selectedTab = it })
-
-                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End) {
-                    TextButton(onClick = onCoverLetter) {
-                        Text("打开 Cover Letter 页", color = NeonBlueEnd, fontSize = 12.sp)
-                    }
-                }
 
                 // ── Tab content ──
                 val tabText = if (selectedTab == 0) result.optimizedResume else result.coverLetter
