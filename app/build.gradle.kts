@@ -27,8 +27,14 @@ android {
         val props = Properties()
         val localPropsFile = rootProject.file("local.properties")
         if (localPropsFile.exists()) props.load(localPropsFile.inputStream())
-        val baseUrl = props.getProperty("cvdoor.api.base.url", "http://35.183.25.180:8000/")
+        val baseUrl = props.getProperty("cvdoor.api.base.url")
+            ?: props.getProperty("CVDOOR_API_BASE_URL")
+            ?: "https://api.cvdoor.app/"
+        val apiKey = props.getProperty("cvdoor.api.key")
+            ?: props.getProperty("CVDOOR_API_KEY")
+            ?: ""
         buildConfigField("String", "API_BASE_URL", "\"$baseUrl\"")
+        buildConfigField("String", "API_KEY", "\"$apiKey\"")
     }
 
     buildFeatures {
@@ -41,12 +47,16 @@ android {
             val props = Properties()
             val localPropsFile = rootProject.file("local.properties")
             if (localPropsFile.exists()) props.load(localPropsFile.inputStream())
-            storeFile = rootProject.file(
-                props.getProperty("cvdoor.keystore.file", "cvdoor-release.keystore")
-            )
-            storePassword = props.getProperty("cvdoor.keystore.password", "cvdoor2024")
-            keyAlias     = props.getProperty("cvdoor.key.alias", "cvdoor")
-            keyPassword  = props.getProperty("cvdoor.key.password", "cvdoor2024")
+            val storePath = props.getProperty("cvdoor.keystore.file")
+                ?: System.getenv("CVDOOR_KEYSTORE_FILE")
+                ?: "cvdoor-release.keystore"
+            storeFile = rootProject.file(storePath)
+            storePassword = props.getProperty("cvdoor.keystore.password")
+                ?: System.getenv("CVDOOR_KEYSTORE_PASSWORD")
+            keyAlias = props.getProperty("cvdoor.key.alias")
+                ?: System.getenv("CVDOOR_KEY_ALIAS")
+            keyPassword = props.getProperty("cvdoor.key.password")
+                ?: System.getenv("CVDOOR_KEY_PASSWORD")
         }
     }
 

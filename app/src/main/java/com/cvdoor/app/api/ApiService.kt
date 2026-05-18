@@ -17,7 +17,11 @@ data class OptimizeReq(
     @Json(name = "resume_text") val resumeText: String,
     @Json(name = "jd_text") val jdText: String,
     @Json(name = "user_id") val userId: String? = null,
-    @Json(name = "style") val style: String? = null
+    @Json(name = "style") val style: String? = null,
+    @Json(name = "industry") val industry: String? = null,
+    @Json(name = "seniority") val seniority: String? = null,
+    @Json(name = "region") val region: String? = null,
+    @Json(name = "tone") val tone: String? = null
 )
 
 /* ===================== Analysis DTO（来自后端） ===================== */
@@ -37,7 +41,11 @@ data class OverallAnalysisDTO(
     val summary: String? = null,
     val strengths: List<String>? = emptyList(),
     val issues: List<String>? = emptyList(),
-    val actions: List<String>? = emptyList()
+    val actions: List<String>? = emptyList(),
+    @Json(name = "must_fix") val mustFix: List<String>? = emptyList(),
+    @Json(name = "should_improve") val shouldImprove: List<String>? = emptyList(),
+    @Json(name = "could_optimize") val couldOptimize: List<String>? = emptyList(),
+    @Json(name = "data_gaps") val dataGaps: List<String>? = emptyList()
 )
 
 data class AnalysisDTO(
@@ -67,10 +75,16 @@ data class OptimizeResp(
 
     // 新增：分析
     val analysis: AnalysisDTO? = null,
+    @Json(name = "cover_letter_quality") val coverLetterQuality: Map<String, Any>? = null,
 
     // 服务端已落库
     @Json(name = "record_id") val recordId: Long? = null,
-    @Json(name = "created_at") val createdAtSec: Long? = null
+    @Json(name = "created_at") val createdAtSec: Long? = null,
+    @Json(name = "session_token") val sessionToken: String? = null,
+    @Json(name = "session_expires_at") val sessionExpiresAt: Long? = null,
+    @Json(name = "cover_letter_status") val coverLetterStatus: String? = null,
+    @Json(name = "need_more_info") val needMoreInfo: Boolean? = null,
+    @Json(name = "required_info") val requiredInfo: List<String>? = emptyList()
 )
 
 /* ===================== Server records ===================== */
@@ -94,7 +108,20 @@ data class ServerRecord(
 /* ===================== Cover Letter Response ===================== */
 
 data class CoverLetterResp(
-    @Json(name = "cover_letter") val coverLetter: String
+    @Json(name = "cover_letter") val coverLetter: String,
+    val quality: Map<String, Any>? = null,
+    val status: String? = null,
+    @Json(name = "need_more_info") val needMoreInfo: Boolean? = null,
+    @Json(name = "required_info") val requiredInfo: List<String>? = emptyList()
+)
+
+data class SessionReq(
+    @Json(name = "user_id") val userId: String
+)
+
+data class SessionResp(
+    @Json(name = "session_token") val sessionToken: String,
+    @Json(name = "expires_at") val expiresAt: Long
 )
 
 /* ===================== API ===================== */
@@ -109,20 +136,26 @@ interface ApiService {
     @POST("/v1/generate-cover-letter")
     suspend fun generateCoverLetter(@Body body: OptimizeReq): CoverLetterResp
 
+    @POST("/v1/auth/session")
+    suspend fun createSession(
+        @Header("X-API-Key") apiKey: String,
+        @Body body: SessionReq
+    ): SessionResp
+
     @GET("/v1/records")
     suspend fun listRecords(
-        @Query("user_id") userId: String,
+        @Header("Authorization") bearerToken: String,
         @Query("limit") limit: Int = 50
     ): List<ServerRecord>
 
     @DELETE("/v1/records/{id}")
     suspend fun deleteRecord(
         @Path("id") id: Long,
-        @Query("user_id") userId: String
+        @Header("Authorization") bearerToken: String
     ): Response<Unit>   // ✅ 修复
 
     @POST("/v1/records/clear")
-    suspend fun clearRecords(@Query("user_id") userId: String): Response<Unit>  // ✅ 修复
+    suspend fun clearRecords(@Header("Authorization") bearerToken: String): Response<Unit>  // ✅ 修复
 
     companion object {
         fun create(): ApiService {

@@ -86,9 +86,8 @@ class BillingManager(context: Context) : PurchasesUpdatedListener {
     /** Launch the billing flow. Returns false if not ready. */
     fun launchBillingFlow(activity: Activity): Boolean {
         val details = productDetails ?: run {
-            // Dev/test environment — simulate success immediately
-            _state.value = BillingState.Success
-            return true
+            _state.value = BillingState.Failed("PRODUCT_NOT_AVAILABLE")
+            return false
         }
         if (!client.isReady) { connect(); return false }
 
