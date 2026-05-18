@@ -81,7 +81,10 @@ data class OptimizeResp(
     @Json(name = "record_id") val recordId: Long? = null,
     @Json(name = "created_at") val createdAtSec: Long? = null,
     @Json(name = "session_token") val sessionToken: String? = null,
-    @Json(name = "session_expires_at") val sessionExpiresAt: Long? = null
+    @Json(name = "session_expires_at") val sessionExpiresAt: Long? = null,
+    @Json(name = "cover_letter_status") val coverLetterStatus: String? = null,
+    @Json(name = "need_more_info") val needMoreInfo: Boolean? = null,
+    @Json(name = "required_info") val requiredInfo: List<String>? = emptyList()
 )
 
 /* ===================== Server records ===================== */
@@ -106,7 +109,10 @@ data class ServerRecord(
 
 data class CoverLetterResp(
     @Json(name = "cover_letter") val coverLetter: String,
-    val quality: Map<String, Any>? = null
+    val quality: Map<String, Any>? = null,
+    val status: String? = null,
+    @Json(name = "need_more_info") val needMoreInfo: Boolean? = null,
+    @Json(name = "required_info") val requiredInfo: List<String>? = emptyList()
 )
 
 data class SessionReq(

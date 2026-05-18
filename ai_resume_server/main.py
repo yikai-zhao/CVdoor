@@ -66,6 +66,32 @@ def init_db():
             analysis_json TEXT    DEFAULT NULL,
             created_at    INTEGER NOT NULL
         )""")
+        conn.execute("""
+        CREATE TABLE IF NOT EXISTS quality_failures (
+            id             INTEGER PRIMARY KEY AUTOINCREMENT,
+            reason         TEXT    NOT NULL,
+            quality_json   TEXT    NOT NULL,
+            required_info  TEXT    NOT NULL DEFAULT '[]',
+            resume_excerpt TEXT    NOT NULL,
+            jd_excerpt     TEXT    NOT NULL,
+            cover_letter   TEXT    NOT NULL,
+            created_at     INTEGER NOT NULL
+        )""")
+        conn.execute("""
+        CREATE TABLE IF NOT EXISTS regression_cases (
+            id          INTEGER PRIMARY KEY AUTOINCREMENT,
+            name        TEXT    NOT NULL UNIQUE,
+            resume_text TEXT    NOT NULL,
+            jd_text     TEXT    NOT NULL,
+            style       TEXT    DEFAULT NULL,
+            industry    TEXT    DEFAULT NULL,
+            seniority   TEXT    DEFAULT NULL,
+            region      TEXT    DEFAULT NULL,
+            tone        TEXT    DEFAULT NULL,
+            min_score   INTEGER NOT NULL DEFAULT 75,
+            created_at  INTEGER NOT NULL,
+            updated_at  INTEGER NOT NULL
+        )""")
         conn.commit()
         conn.close()
 
@@ -136,6 +162,9 @@ class OptimizeResp(BaseModel):
     created_at: Optional[int] = None
     session_token: Optional[str] = None
     session_expires_at: Optional[int] = None
+    cover_letter_status: Optional[str] = None
+    need_more_info: bool = False
+    required_info: List[str] = []
 
 class RecordOut(BaseModel):
     id: int
@@ -149,6 +178,47 @@ class RecordOut(BaseModel):
     dims_before: List[int]
     dims_after: List[int]
     analysis: Optional[AnalysisOut] = None
+
+class QualityFailureOut(BaseModel):
+    id: int
+    reason: str
+    quality: Dict[str, Any] = {}
+    required_info: List[str] = []
+    resume_excerpt: str = ""
+    jd_excerpt: str = ""
+    cover_letter: str = ""
+    created_at: int
+
+class RegressionCaseIn(BaseModel):
+    name: str
+    resume_text: str
+    jd_text: str
+    style: Optional[str] = None
+    industry: Optional[str] = None
+    seniority: Optional[str] = None
+    region: Optional[str] = None
+    tone: Optional[str] = None
+    min_score: int = Field(default=75, ge=0, le=100)
+
+class RegressionCaseOut(RegressionCaseIn):
+    id: int
+    created_at: int
+    updated_at: int
+
+class RegressionRunItem(BaseModel):
+    case_id: int
+    name: str
+    score: int
+    pass_threshold: int
+    passed: bool
+    feedback: List[str] = []
+
+class RegressionRunResp(BaseModel):
+    total: int
+    passed: int
+    failed: int
+    pass_rate: float
+    items: List[RegressionRunItem]
 
 # ===== FastAPI =====
 app = FastAPI(title="CVATS.AI Backend", version="2.0.0")
@@ -268,6 +338,12 @@ def _extract_bearer(authorization: Optional[str]) -> str:
     if not token:
         raise HTTPException(status_code=401, detail="Empty bearer token")
     return token
+
+def _require_api_key(x_api_key: Optional[str]) -> None:
+    if not SERVER_API_KEY:
+        raise HTTPException(status_code=503, detail="Server API key is not configured")
+    if (x_api_key or "").strip() != SERVER_API_KEY:
+        raise HTTPException(status_code=401, detail="Invalid API key")
 
 def _resume_focus_excerpt(resume: str, max_chars: int = MAX_RESUME_CONTEXT_CHARS) -> str:
     text = (resume or "").strip()
@@ -780,6 +856,43 @@ def _generate_cover_letter_only(
         print(f"\n=== Cover Letter Generated ({quality.get('overall', 0)}) ===\n{cover_letter[:300]}\n")
     return cover_letter, quality
 
+def _extract_required_info(analysis: Optional[AnalysisOut]) -> List[str]:
+    if not analysis:
+        return []
+    gaps = list((analysis.overall.data_gaps or []))
+    for d in analysis.dimensions:
+        for miss in (d.missing_before or []):
+            gaps.append(f"{d.name}: {miss}")
+    return _dedup(gaps, 10)
+
+def _record_quality_failure(
+    reason: str,
+    quality: Dict[str, Any],
+    required_info: List[str],
+    resume_text: str,
+    jd_text: str,
+    cover_letter: str,
+) -> None:
+    now = int(time.time())
+    with _db_lock:
+        conn = get_db()
+        conn.execute(
+            """INSERT INTO quality_failures
+               (reason, quality_json, required_info, resume_excerpt, jd_excerpt, cover_letter, created_at)
+               VALUES (?,?,?,?,?,?,?)""",
+            (
+                reason,
+                json.dumps(quality or {}, ensure_ascii=False),
+                json.dumps(required_info or [], ensure_ascii=False),
+                _resume_focus_excerpt(resume_text, 1200),
+                _resume_focus_excerpt(jd_text, 1200),
+                (cover_letter or "")[:2400],
+                now,
+            ),
+        )
+        conn.commit()
+        conn.close()
+
 # ===== Records helpers =====
 def _save_record(user_id: str, resume: str, jd: str, resp: OptimizeResp):
     now = int(time.time())
@@ -872,6 +985,24 @@ def optimize(body: OptimizeReq):
                 body.jd_text,
             )
 
+        required_info = _extract_required_info(resp.analysis)
+        quality_overall = int((resp.cover_letter_quality or {}).get("overall", 0))
+        if _cover_letter_needs_retry(resp.cover_letter) or quality_overall < MIN_COVER_LETTER_QUALITY_SCORE:
+            resp.cover_letter_status = "need_more_info"
+            resp.need_more_info = True
+            resp.required_info = required_info
+            _record_quality_failure(
+                reason="optimize_low_quality",
+                quality=resp.cover_letter_quality or {},
+                required_info=required_info,
+                resume_text=body.resume_text,
+                jd_text=body.jd_text,
+                cover_letter=resp.cover_letter or "",
+            )
+        else:
+            resp.cover_letter_status = "ok"
+            resp.required_info = required_info
+
         if body.user_id and body.user_id.strip():
             user_id = body.user_id.strip()
             record_id, created_at = _save_record(
@@ -920,7 +1051,29 @@ def generate_cover_letter(body: OptimizeReq):
         )
         if not cover_letter:
             raise HTTPException(status_code=500, detail="AI 未能生成求职信")
-        return {"cover_letter": cover_letter, "quality": quality}
+        quality_overall = int((quality or {}).get("overall", 0))
+        required_info = []
+        need_more_info = _cover_letter_needs_retry(cover_letter) or quality_overall < MIN_COVER_LETTER_QUALITY_SCORE
+        if need_more_info:
+            required_info = _dedup(
+                (quality.get("feedback") or []) + ["请补充更具体的项目成果指标、业务场景与职责边界。"],
+                6
+            )
+            _record_quality_failure(
+                reason="cover_letter_low_quality",
+                quality=quality or {},
+                required_info=required_info,
+                resume_text=body.resume_text,
+                jd_text=body.jd_text,
+                cover_letter=cover_letter,
+            )
+        return {
+            "cover_letter": cover_letter,
+            "quality": quality,
+            "status": "need_more_info" if need_more_info else "ok",
+            "need_more_info": need_more_info,
+            "required_info": required_info,
+        }
     except HTTPException:
         raise
     except Exception as e:
@@ -967,6 +1120,173 @@ def clear_records(authorization: Optional[str] = Header(None)):
         conn.commit()
         conn.close()
     return {"ok": True}
+
+@app.get("/v1/quality/failures", response_model=List[QualityFailureOut])
+def list_quality_failures(
+    limit: int = Query(50, ge=1, le=200),
+    x_api_key: Optional[str] = Header(None),
+):
+    _require_api_key(x_api_key)
+    with _db_lock:
+        conn = get_db()
+        rows = conn.execute(
+            """SELECT id, reason, quality_json, required_info, resume_excerpt, jd_excerpt, cover_letter, created_at
+               FROM quality_failures ORDER BY created_at DESC LIMIT ?""",
+            (limit,),
+        ).fetchall()
+        conn.close()
+    out: List[QualityFailureOut] = []
+    for r in rows:
+        out.append(QualityFailureOut(
+            id=r["id"],
+            reason=r["reason"],
+            quality=_try_parse_json(r["quality_json"] or "{}") or {},
+            required_info=_try_parse_json(r["required_info"] or "[]") or [],
+            resume_excerpt=r["resume_excerpt"],
+            jd_excerpt=r["jd_excerpt"],
+            cover_letter=r["cover_letter"],
+            created_at=r["created_at"],
+        ))
+    return out
+
+@app.post("/v1/quality/regression-cases", response_model=RegressionCaseOut)
+def upsert_regression_case(body: RegressionCaseIn, x_api_key: Optional[str] = Header(None)):
+    _require_api_key(x_api_key)
+    now = int(time.time())
+    with _db_lock:
+        conn = get_db()
+        row = conn.execute("SELECT id, created_at FROM regression_cases WHERE name=?", (body.name,)).fetchone()
+        if row:
+            conn.execute(
+                """UPDATE regression_cases
+                   SET resume_text=?, jd_text=?, style=?, industry=?, seniority=?, region=?, tone=?, min_score=?, updated_at=?
+                   WHERE id=?""",
+                (
+                    body.resume_text,
+                    body.jd_text,
+                    body.style,
+                    body.industry,
+                    body.seniority,
+                    body.region,
+                    body.tone,
+                    body.min_score,
+                    now,
+                    row["id"],
+                ),
+            )
+            case_id = row["id"]
+            created_at = row["created_at"]
+        else:
+            cur = conn.execute(
+                """INSERT INTO regression_cases
+                   (name, resume_text, jd_text, style, industry, seniority, region, tone, min_score, created_at, updated_at)
+                   VALUES (?,?,?,?,?,?,?,?,?,?,?)""",
+                (
+                    body.name,
+                    body.resume_text,
+                    body.jd_text,
+                    body.style,
+                    body.industry,
+                    body.seniority,
+                    body.region,
+                    body.tone,
+                    body.min_score,
+                    now,
+                    now,
+                ),
+            )
+            case_id = cur.lastrowid
+            created_at = now
+        conn.commit()
+        conn.close()
+    return RegressionCaseOut(
+        id=case_id,
+        created_at=created_at,
+        updated_at=now,
+        **body.model_dump(),
+    )
+
+@app.get("/v1/quality/regression-cases", response_model=List[RegressionCaseOut])
+def list_regression_cases(
+    limit: int = Query(100, ge=1, le=500),
+    x_api_key: Optional[str] = Header(None),
+):
+    _require_api_key(x_api_key)
+    with _db_lock:
+        conn = get_db()
+        rows = conn.execute(
+            """SELECT id, name, resume_text, jd_text, style, industry, seniority, region, tone, min_score, created_at, updated_at
+               FROM regression_cases ORDER BY updated_at DESC LIMIT ?""",
+            (limit,),
+        ).fetchall()
+        conn.close()
+    return [
+        RegressionCaseOut(
+            id=r["id"],
+            name=r["name"],
+            resume_text=r["resume_text"],
+            jd_text=r["jd_text"],
+            style=r["style"],
+            industry=r["industry"],
+            seniority=r["seniority"],
+            region=r["region"],
+            tone=r["tone"],
+            min_score=r["min_score"],
+            created_at=r["created_at"],
+            updated_at=r["updated_at"],
+        )
+        for r in rows
+    ]
+
+@app.post("/v1/quality/regression-run", response_model=RegressionRunResp)
+def run_regression_cases(
+    limit: int = Query(30, ge=1, le=100),
+    x_api_key: Optional[str] = Header(None),
+):
+    _require_api_key(x_api_key)
+    with _db_lock:
+        conn = get_db()
+        rows = conn.execute(
+            """SELECT id, name, resume_text, jd_text, style, industry, seniority, region, tone, min_score
+               FROM regression_cases ORDER BY updated_at DESC LIMIT ?""",
+            (limit,),
+        ).fetchall()
+        conn.close()
+
+    items: List[RegressionRunItem] = []
+    for r in rows:
+        letter, quality = _generate_cover_letter_only(
+            resume=r["resume_text"],
+            jd=r["jd_text"],
+            style=r["style"] or "professional",
+            industry=r["industry"],
+            seniority=r["seniority"],
+            region=r["region"],
+            tone=r["tone"],
+        )
+        score = int((quality or {}).get("overall", 0))
+        threshold = int(r["min_score"] or MIN_COVER_LETTER_QUALITY_SCORE)
+        passed = bool(letter) and score >= threshold and not _cover_letter_needs_retry(letter)
+        items.append(RegressionRunItem(
+            case_id=r["id"],
+            name=r["name"],
+            score=score,
+            pass_threshold=threshold,
+            passed=passed,
+            feedback=_dedup((quality or {}).get("feedback"), 4),
+        ))
+
+    passed = len([x for x in items if x.passed])
+    total = len(items)
+    failed = total - passed
+    pass_rate = round((passed / total), 4) if total else 0.0
+    return RegressionRunResp(
+        total=total,
+        passed=passed,
+        failed=failed,
+        pass_rate=pass_rate,
+        items=items,
+    )
 
 @app.get("/healthz")
 def healthz():
