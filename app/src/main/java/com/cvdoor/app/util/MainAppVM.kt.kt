@@ -5,9 +5,11 @@ import android.app.Application
 import android.util.Log
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
+import com.cvdoor.app.BuildConfig
 import com.cvdoor.app.api.ApiService
 import com.cvdoor.app.api.OptimizeReq
 import com.cvdoor.app.api.AnalysisDTO
+import com.cvdoor.app.api.SessionReq
 import com.cvdoor.app.auth.AuthDataStore
 import com.cvdoor.app.data.*
 import kotlinx.coroutines.flow.*
@@ -36,6 +38,8 @@ class MainAppVM(app: Application) : AndroidViewModel(app) {
 
     // 本地删除的记录 ID
     private val locallyDeletedIds = mutableSetOf<Long>()
+    private var recordsSessionToken: String? = null
+    private var recordsSessionExpireAtSec: Long = 0L
 
     init {
         viewModelScope.launch {
@@ -44,6 +48,8 @@ class MainAppVM(app: Application) : AndroidViewModel(app) {
                 if (u.isNullOrBlank()) {
                     _history.value = emptyList()
                     _credits.value = guestCredits
+                    recordsSessionToken = null
+                    recordsSessionExpireAtSec = 0L
                 } else {
                     repo.ensureAccount(u)
                     repo.getAccount(u)?.let { _credits.value = it.remainingCredits }
@@ -102,7 +108,8 @@ class MainAppVM(app: Application) : AndroidViewModel(app) {
     /* ---------- 手动刷新 ---------- */
     suspend fun refreshHistory(u: String) {
         try {
-            val remote = api.listRecords(userId = u, limit = 100).map { r ->
+            val authHeader = ensureRecordsAuthHeader(u) ?: return
+            val remote = api.listRecords(bearerToken = authHeader, limit = 100).map { r ->
                 OptimizationRecord(
                     id = r.id,
                     userId = r.userId,
@@ -194,6 +201,10 @@ class MainAppVM(app: Application) : AndroidViewModel(app) {
                     analysis = analysis
                 )
 
+                if (!resp.sessionToken.isNullOrBlank()) {
+                    recordsSessionToken = resp.sessionToken
+                    recordsSessionExpireAtSec = resp.sessionExpiresAt ?: 0L
+                }
                 _history.value = listOf(rec) + _history.value
                 onDone(rec)
 
@@ -212,11 +223,12 @@ class MainAppVM(app: Application) : AndroidViewModel(app) {
     /* ---------- Delete one record ---------- */
     fun deleteRecord(recordId: Long) = viewModelScope.launch {
         val u = uid.value ?: return@launch
+        val authHeader = ensureRecordsAuthHeader(u) ?: return@launch
         val before = _history.value
         _history.value = before.filterNot { it.id == recordId }
         locallyDeletedIds.add(recordId)
         try {
-            val resp = api.deleteRecord(recordId, userId = u)
+            val resp = api.deleteRecord(recordId, bearerToken = authHeader)
             if (resp.isSuccessful) {
                 Log.d("MainAppVM", "deleteRecord: success id=$recordId")
             } else {
@@ -238,11 +250,12 @@ class MainAppVM(app: Application) : AndroidViewModel(app) {
     /* ---------- Clear all history ---------- */
     fun clearHistory() = viewModelScope.launch {
         val u = uid.value ?: return@launch
+        val authHeader = ensureRecordsAuthHeader(u) ?: return@launch
         val backup = _history.value
         _history.value = emptyList()
         locallyDeletedIds.addAll(backup.map { it.id })
         try {
-            val resp = api.clearRecords(u)
+            val resp = api.clearRecords(authHeader)
             if (!resp.isSuccessful) {
                 Log.e("MainAppVM", "clearHistory failed code=${resp.code()}")
                 _history.value = backup
@@ -264,5 +277,25 @@ class MainAppVM(app: Application) : AndroidViewModel(app) {
         val v = this.value
         if (this is MutableStateFlow<T?>) this.value = null
         return v
+    }
+
+    private suspend fun ensureRecordsAuthHeader(userId: String): String? {
+        val nowSec = System.currentTimeMillis() / 1000
+        val active = recordsSessionToken?.takeIf { it.isNotBlank() && recordsSessionExpireAtSec > nowSec + 30 }
+        if (active != null) return "Bearer $active"
+
+        val apiKey = BuildConfig.API_KEY.takeIf { it.isNotBlank() } ?: run {
+            Log.w("MainAppVM", "Missing API key, records auth unavailable")
+            return null
+        }
+        return try {
+            val session = api.createSession(apiKey = apiKey, body = SessionReq(userId = userId))
+            recordsSessionToken = session.sessionToken
+            recordsSessionExpireAtSec = session.expiresAt
+            "Bearer ${session.sessionToken}"
+        } catch (e: Exception) {
+            Log.e("MainAppVM", "Failed to create session token", e)
+            null
+        }
     }
 }

@@ -14,7 +14,7 @@
         android:roundIcon="@drawable/ic_app_icon_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.CVATSAI"
-        android:usesCleartextTraffic="true">
+        android:usesCleartextTraffic="false">
 
         <!-- 用于分享导出的 PDF（缓存目录），无需存储权限 -->
         <provider

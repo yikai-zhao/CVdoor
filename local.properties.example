@@ -2,7 +2,11 @@
 # Example: sdk.dir=/home/yourname/Android/Sdk
 sdk.dir=/path/to/Android/Sdk
 
-# Optional: enable live AI optimizer.
+# Optional: enable live AI optimizer (HTTPS only).
 # Keep trailing slash for base URL.
+cvdoor.api.base.url=https://api.yourdomain.com/
+cvdoor.api.key=replace_with_your_server_api_key
+
+# Backward-compatible aliases (optional):
 CVDOOR_API_BASE_URL=https://api.yourdomain.com/
-CVDOOR_API_KEY=replace_with_your_api_key
+CVDOOR_API_KEY=replace_with_your_server_api_key
