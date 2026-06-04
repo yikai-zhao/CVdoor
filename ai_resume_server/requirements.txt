@@ -2,3 +2,13 @@ fastapi==0.115.6
 uvicorn[standard]==0.32.1
 pydantic==2.10.4
 openai>=1.40.0
+# Google Play subscription verification - service account → androidpublisher API
+google-api-python-client>=2.140.0
+google-auth>=2.34.0
+# PostgreSQL support (production DATABASE_URL)
+psycopg2-binary>=2.9.9
+# Error monitoring - set SENTRY_DSN env var to activate
+sentry-sdk[fastapi]>=2.8.0
+# Stripe web billing - set STRIPE_SECRET_KEY env var to activate
+stripe>=10.0.0
+
