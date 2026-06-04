@@ -72,10 +72,14 @@ echo "[3/8] Python syntax check"
 python3 -m py_compile "$ROOT_DIR/main.py"
 
 echo "[4/8] Ensure backend dependencies"
-python3 -m pip install --break-system-packages -r "$ROOT_DIR/requirements.txt" >/tmp/cvdoor_acceptance_pip.log 2>&1 || {
-  echo "[FAIL] pip install failed. See /tmp/cvdoor_acceptance_pip.log"
-  exit 1
-}
+if ! python3 -m pip install --break-system-packages -r "$ROOT_DIR/requirements.txt" >/tmp/cvdoor_acceptance_pip.log 2>&1; then
+  if ! python3 -m pip install --user -r "$ROOT_DIR/requirements.txt" >>/tmp/cvdoor_acceptance_pip.log 2>&1; then
+    if ! python3 -m pip install -r "$ROOT_DIR/requirements.txt" >>/tmp/cvdoor_acceptance_pip.log 2>&1; then
+      echo "[FAIL] pip install failed. See /tmp/cvdoor_acceptance_pip.log"
+      exit 1
+    fi
+  fi
+fi
 
 echo "[5/8] Check DB reachability and start backend on :8010"
 python3 - <<'PY' "${DATABASE_URL}"
