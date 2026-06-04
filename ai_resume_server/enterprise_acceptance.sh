@@ -7,6 +7,33 @@ set -euo pipefail
 ROOT_DIR="$(cd "$(dirname "$0")" && pwd)"
 cd "$ROOT_DIR"
 
+API_BASE_URL="http://127.0.0.1:8010"
+
+start_backend() {
+  pkill -f "uvicorn main:app --host 127.0.0.1 --port 8010" >/dev/null 2>&1 || true
+  nohup python3 -m uvicorn main:app --host 127.0.0.1 --port 8010 >/tmp/cvdoor_acceptance_backend.log 2>&1 &
+}
+
+wait_backend_health() {
+  local tries="${1:-90}"
+  for _ in $(seq 1 "$tries"); do
+    if curl -fsS --max-time 3 "${API_BASE_URL}/healthz" >/tmp/cvdoor_acceptance_health.json 2>/dev/null; then
+      return 0
+    fi
+    sleep 1
+  done
+  return 1
+}
+
+ensure_backend_alive() {
+  if curl -fsS --max-time 3 "${API_BASE_URL}/healthz" >/dev/null 2>&1; then
+    return 0
+  fi
+  echo "[WARN] Backend is not responding; restarting once..."
+  start_backend
+  wait_backend_health 30
+}
+
 load_env_file() {
   local file="$1"
   [[ -f "$file" ]] || return 0
@@ -103,17 +130,8 @@ except Exception as e:
     raise SystemExit(1)
 PY
 
-pkill -f "uvicorn main:app --host 127.0.0.1 --port 8010" >/dev/null 2>&1 || true
-nohup python3 -m uvicorn main:app --host 127.0.0.1 --port 8010 >/tmp/cvdoor_acceptance_backend.log 2>&1 &
-
-for _ in $(seq 1 90); do
-  if curl -fsS --max-time 3 "http://127.0.0.1:8010/healthz" >/tmp/cvdoor_acceptance_health.json 2>/dev/null; then
-    break
-  fi
-  sleep 1
-done
-
-if ! test -s /tmp/cvdoor_acceptance_health.json; then
+start_backend
+if ! wait_backend_health 90; then
   echo "[FAIL] health check failed"
   echo "[INFO] showing backend startup log tail:"
   tail -n 120 /tmp/cvdoor_acceptance_backend.log || true
@@ -121,7 +139,7 @@ if ! test -s /tmp/cvdoor_acceptance_health.json; then
 fi
 
 echo "[6/8] Stripe checkout API smoke (expects a checkout URL)"
-checkout_resp="$(curl -sS --max-time 30 -X POST "http://127.0.0.1:8010/v1/billing/stripe/checkout" \
+checkout_resp="$(curl -sS --max-time 30 -X POST "${API_BASE_URL}/v1/billing/stripe/checkout" \
   -H "Content-Type: application/json" \
   -H "X-API-Key: ${SERVER_API_KEY}" \
   -d '{"plan":"monthly","user_id":"usr-acceptance"}')"
@@ -137,8 +155,14 @@ if not url.startswith("https://"):
 print("[PASS] Stripe checkout URL generated")
 PY
 
+ensure_backend_alive || {
+  echo "[FAIL] backend did not recover after Stripe checkout"
+  tail -n 120 /tmp/cvdoor_acceptance_backend.log || true
+  exit 1
+}
+
 echo "[7/8] Entitlement read API smoke"
-ent_resp="$(curl -sS --max-time 30 -H "X-API-Key: ${SERVER_API_KEY}" "http://127.0.0.1:8010/v1/entitlements/usr-acceptance")"
+ent_resp="$(curl -sS --max-time 30 -H "X-API-Key: ${SERVER_API_KEY}" "${API_BASE_URL}/v1/entitlements/usr-acceptance")"
 python3 - <<'PY' "$ent_resp"
 import json, sys
 obj = json.loads(sys.argv[1])
@@ -150,11 +174,25 @@ if missing:
 print("[PASS] Entitlement API shape OK")
 PY
 
-echo "[8/8] Manual Play verification step required"
-echo "[TODO] Use an actual Play test purchase token and call /v1/billing/verify."
-echo "       Example command (replace TOKEN/ORDER):"
-echo "curl -sS -X POST http://127.0.0.1:8010/v1/billing/verify \\" 
-echo "  -H 'Content-Type: application/json' -H \"X-API-Key: ${SERVER_API_KEY}\" \\" 
-echo "  -d '{\"user_id\":\"usr-acceptance\",\"product_id\":\"cvdoor_pro_monthly\",\"purchase_token\":\"TOKEN\",\"order_id\":\"ORDER\"}'"
+echo "[8/8] Google Play verify"
+PLAY_VERIFY_USER_ID="${PLAY_VERIFY_USER_ID:-usr-acceptance}"
+PLAY_VERIFY_PRODUCT_ID="${PLAY_VERIFY_PRODUCT_ID:-cvdoor_pro_monthly}"
+if [[ -n "${PLAY_VERIFY_TOKEN:-}" && -n "${PLAY_VERIFY_ORDER_ID:-}" ]]; then
+  verify_resp="$(curl -sS --max-time 30 -X POST "${API_BASE_URL}/v1/billing/verify" \
+    -H "Content-Type: application/json" \
+    -H "X-API-Key: ${SERVER_API_KEY}" \
+    -d "{\"user_id\":\"${PLAY_VERIFY_USER_ID}\",\"product_id\":\"${PLAY_VERIFY_PRODUCT_ID}\",\"purchase_token\":\"${PLAY_VERIFY_TOKEN}\",\"order_id\":\"${PLAY_VERIFY_ORDER_ID}\"}")"
+  python3 - <<'PY' "$verify_resp"
+import json, sys
+obj = json.loads(sys.argv[1])
+if not obj.get("ok"):
+    print("[FAIL] Play verify failed:", obj)
+    raise SystemExit(1)
+print("[PASS] Play verify succeeded")
+PY
+else
+  echo "[TODO] Set PLAY_VERIFY_TOKEN and PLAY_VERIFY_ORDER_ID env vars to auto-run real Play verification."
+  echo "       Current run skipped real token verification."
+fi
 
 echo "[DONE] Automated acceptance completed. Backend log: /tmp/cvdoor_acceptance_backend.log"
