@@ -517,6 +517,20 @@ def init_db():
             UNIQUE(user_id, product_id)
         )""")
         conn.execute("CREATE INDEX IF NOT EXISTS idx_entitlements_user ON entitlements(user_id)")
+        # Monthly material support package subscription (non-LLM feature bundle).
+        conn.execute(f"""
+        CREATE TABLE IF NOT EXISTS material_package_subscriptions (
+            id               {_ddl_pk()},
+            user_id          TEXT    NOT NULL UNIQUE,
+            status           TEXT    NOT NULL DEFAULT 'active',
+            started_at       INTEGER NOT NULL,
+            expires_at       INTEGER NOT NULL,
+            last_expired_at  INTEGER DEFAULT NULL,
+            payment_order_id TEXT    DEFAULT NULL,
+            created_at       INTEGER NOT NULL,
+            updated_at       INTEGER NOT NULL
+        )""")
+        conn.execute("CREATE INDEX IF NOT EXISTS idx_pkg_user ON material_package_subscriptions(user_id)")
         # Persistent async job store — survives server restarts.
         # status: "pending" | "running" | "done" | "error"
         # Running jobs that existed before restart are marked "error" since their
@@ -4320,6 +4334,14 @@ class EntitlementResp(BaseModel):
     pro_remaining_30d: int = 0
 
 
+class MaterialPackageStatusResp(BaseModel):
+    status: str = "never_purchased"  # never_purchased | active | expired
+    started_at: Optional[str] = None
+    expires_at: Optional[str] = None
+    last_expired_at: Optional[str] = None
+    days_remaining: int = 0
+
+
 def _get_usage_snapshot(user_id: str) -> Dict[str, int]:
     if not user_id:
         return {
@@ -4376,6 +4398,58 @@ def _entitlement_from_row(row) -> EntitlementResp:
         is_active=active,
         auto_renewing=bool(row["auto_renewing"]),
         **usage,
+    )
+
+
+def _ts_to_iso(ts: Optional[int]) -> Optional[str]:
+    if not ts:
+        return None
+    try:
+        return time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime(int(ts)))
+    except Exception:
+        return None
+
+
+def _get_material_package_status(user_id: str) -> MaterialPackageStatusResp:
+    user_id = (user_id or "").strip()
+    if not user_id:
+        return MaterialPackageStatusResp(status="never_purchased")
+    with _db_lock:
+        conn = get_db()
+        try:
+            row = conn.execute(
+                """SELECT user_id, status, started_at, expires_at, last_expired_at
+                   FROM material_package_subscriptions
+                   WHERE user_id = ?
+                   ORDER BY updated_at DESC LIMIT 1""",
+                (user_id,),
+            ).fetchone()
+        finally:
+            conn.close()
+    if row is None:
+        return MaterialPackageStatusResp(status="never_purchased")
+
+    now = int(time.time())
+    expires_at = int(row["expires_at"] or 0)
+    started_at = int(row["started_at"] or 0)
+    last_expired_at = int(row["last_expired_at"] or 0)
+    active = str(row["status"] or "").strip().lower() == "active" and expires_at > now
+    if active:
+        days_left = max(0, (expires_at - now + 86399) // 86400)
+        return MaterialPackageStatusResp(
+            status="active",
+            started_at=_ts_to_iso(started_at),
+            expires_at=_ts_to_iso(expires_at),
+            last_expired_at=_ts_to_iso(last_expired_at),
+            days_remaining=int(days_left),
+        )
+
+    return MaterialPackageStatusResp(
+        status="expired",
+        started_at=_ts_to_iso(started_at),
+        expires_at=_ts_to_iso(expires_at),
+        last_expired_at=_ts_to_iso(last_expired_at or expires_at),
+        days_remaining=0,
     )
 
 def _get_active_entitlement(user_id: str) -> Optional[sqlite3.Row]:
@@ -4786,6 +4860,12 @@ def get_entitlement(user_id: str, x_api_key: Optional[str] = Header(None)):
     row = _get_active_entitlement(user_id)
     return _entitlement_from_row(row)
 
+
+@app.get("/subscription/material-package/status", response_model=MaterialPackageStatusResp)
+def material_package_status(user_id: str = Query(..., min_length=1), x_api_key: Optional[str] = Header(None)):
+    _require_api_key(x_api_key)
+    return _get_material_package_status(user_id)
+
 # ===== Cover letter variants =====
 
 class CoverLetterVariantOut(BaseModel):
@@ -4834,12 +4914,10 @@ def cover_letter_variants(body: OptimizeReq, x_api_key: Optional[str] = Header(N
         variants=out,
     )
 
-# ===== Freemium preview =====
+# ===== Pre-payment fixed samples =====
 #
-# A lightweight, no-auth scoring pass that lets first-time users see a REAL
-# match score + the top keywords they hit / missed before being asked to pay.
-# Conversion driver: replaces the "blind paywall" with "see truth -> upgrade".
-# Cheap on tokens (no full optimization), so safe to leave open.
+# Product rule: before a single-service payment succeeds, do NOT call the LLM
+# to generate user-specific results. We only return fixed sample previews.
 
 class PreviewReq(BaseModel):
     resume_text: str
@@ -4853,41 +4931,116 @@ class PreviewResp(BaseModel):
     missing_keywords: List[str] = []
     quick_wins: List[str] = []   # 2-3 highest-ROI fixes user can see for free
 
+
+class PreviewSamplesResp(BaseModel):
+    notice: str = ""
+    samples: List[PreviewResp] = []
+
+
+_PREVIEW_SAMPLES_EN: List[Dict[str, Any]] = [
+    {
+        "match_score": 72,
+        "summary": "Strong technical baseline, but impact metrics and JD keyword alignment are incomplete.",
+        "matched_keywords": ["Python", "SQL", "REST API", "Git", "Data Analysis"],
+        "missing_keywords": ["A/B testing", "KPI ownership", "Stakeholder communication", "ETL", "Monitoring"],
+        "quick_wins": [
+            "Add 2-3 quantified bullets using Action + Metric + Result",
+            "Mirror must-have JD terms in Skills and Experience sections",
+            "Add one bullet showing cross-team delivery impact",
+        ],
+    },
+    {
+        "match_score": 79,
+        "summary": "Relevant project experience exists, but ATS keyword density is uneven.",
+        "matched_keywords": ["Java", "Spring Boot", "Microservices", "Docker", "CI/CD"],
+        "missing_keywords": ["Kubernetes", "SLA/SLO", "Incident response", "Observability", "Cost optimization"],
+        "quick_wins": [
+            "Add one production reliability bullet with uptime metric",
+            "Include observability stack keywords in project descriptions",
+            "Show one cost/performance optimization outcome",
+        ],
+    },
+    {
+        "match_score": 84,
+        "summary": "High baseline fit; remaining gaps are mainly senior-level impact signals.",
+        "matched_keywords": ["Product strategy", "Roadmap", "User research", "Experimentation", "Analytics"],
+        "missing_keywords": ["P&L", "Go-to-market", "Executive reporting", "Retention", "Forecasting"],
+        "quick_wins": [
+            "Add one bullet linking roadmap decisions to business outcome",
+            "Highlight retention or conversion lift with percentages",
+            "Add concise executive communication examples",
+        ],
+    },
+]
+
+_PREVIEW_SAMPLES_ZH: List[Dict[str, Any]] = [
+    {
+        "match_score": 71,
+        "summary": "基礎能力匹配不錯，但量化成果與 JD 關鍵詞覆蓋仍不足。",
+        "matched_keywords": ["Python", "SQL", "API", "Git", "數據分析"],
+        "missing_keywords": ["A/B 測試", "KPI 負責", "跨部門溝通", "ETL", "監控"],
+        "quick_wins": [
+            "補上 2-3 條可量化成果（動作+數字+結果）",
+            "把 JD 必要詞放進技能與經歷要點",
+            "增加一條跨團隊協作落地成果",
+        ],
+    },
+    {
+        "match_score": 80,
+        "summary": "經歷方向符合崗位，但 ATS 關鍵詞分布不均。",
+        "matched_keywords": ["Java", "Spring Boot", "微服務", "Docker", "CI/CD"],
+        "missing_keywords": ["Kubernetes", "SLA/SLO", "故障處理", "可觀測性", "成本優化"],
+        "quick_wins": [
+            "補一條生產穩定性數據（如可用性）",
+            "在項目經歷中加入可觀測性相關關鍵詞",
+            "增加一條性能或成本優化成果",
+        ],
+    },
+    {
+        "match_score": 85,
+        "summary": "整體匹配度高，主要缺口在高階業務影響表述。",
+        "matched_keywords": ["產品策略", "Roadmap", "用戶研究", "實驗", "分析"],
+        "missing_keywords": ["P&L", "上市策略", "高層匯報", "留存", "預測"],
+        "quick_wins": [
+            "增加一條路線圖決策帶來的業務結果",
+            "補上留存/轉化提升百分比",
+            "精簡補充高層溝通案例",
+        ],
+    },
+]
+
+
+def _sample_preview_library(lang: str) -> List[Dict[str, Any]]:
+    return _PREVIEW_SAMPLES_ZH if lang == "zh" else _PREVIEW_SAMPLES_EN
+
+
+def _pick_sample_preview(resume_text: str, jd_text: str) -> Dict[str, Any]:
+    lang = _detect_language(jd_text or resume_text or "")
+    lib = _sample_preview_library(lang)
+    # Deterministic sample selection for stable UX; no user-specific generation.
+    seed = hashlib.sha256(((resume_text or "")[:256] + "|" + (jd_text or "")[:256]).encode("utf-8", errors="ignore")).hexdigest()
+    idx = int(seed[:8], 16) % max(1, len(lib))
+    return lib[idx]
+
+
+@app.get("/preview/samples", response_model=PreviewSamplesResp)
+def preview_samples(x_api_key: Optional[str] = Header(None)):
+    _require_api_key(x_api_key)
+    notice = (
+        "These are sample optimization previews. After payment, CVDoor will generate a personalized resume and Cover Letter based on your uploaded resume and job description."
+    )
+    samples = [PreviewResp(**s) for s in (_PREVIEW_SAMPLES_EN + _PREVIEW_SAMPLES_ZH)]
+    return PreviewSamplesResp(notice=notice, samples=samples)
+
 @app.post("/v1/preview", response_model=PreviewResp)
 def preview(body: PreviewReq, x_api_key: Optional[str] = Header(None)):
     _require_api_key(x_api_key)
     if not body.resume_text.strip() or not body.jd_text.strip():
         raise HTTPException(status_code=400, detail="resume_text and jd_text are required")
-    # Preview is unauthenticated by design (freemium hook); rate-limit by user_id
-    # if provided, otherwise by a global anonymous bucket so a single attacker
-    # can't drain the OpenAI budget.
+    # Fixed sample preview only; no LLM generation before payment.
     rl_key = f"preview:{(getattr(body, 'user_id', '') or 'anonymous').strip() or 'anonymous'}"
     _rate_limit_check(rl_key, RATE_LIMIT_PREVIEW_PER_HOUR)
-    prompt = f"""You are an ATS quick-scoring engine. Output ONLY JSON:
-{{
-  "match_score": <0-100 integer reflecting JD ↔ resume fit>,
-  "summary": "<one-sentence diagnosis in the JD's language>",
-  "matched_keywords": ["up to 5 important keywords the resume already hits"],
-  "missing_keywords": ["up to 5 important keywords from the JD that are missing"],
-  "quick_wins": ["2-3 short fixes the candidate could apply, in the JD's language"]
-}}
-
-Resume:
-\"\"\"{_resume_focus_excerpt(body.resume_text, 2400)}\"\"\"
-
-JD:
-\"\"\"{body.jd_text[:2400]}\"\"\""""
-    try:
-        comp = client.chat.completions.create(
-            model=OPENAI_MODEL,
-            response_format={"type": "json_object"},
-            messages=[{"role": "user", "content": prompt}],
-        )
-        obj = _try_parse_json((comp.choices[0].message.content or "").strip()) or {}
-    except Exception as e:
-        if DEBUG:
-            print(f"preview error: {e}")
-        obj = {}
+    obj = _pick_sample_preview(body.resume_text, body.jd_text)
     return PreviewResp(
         match_score=_clamp(obj.get("match_score", 0)),
         summary=str(obj.get("summary", "")).strip(),
