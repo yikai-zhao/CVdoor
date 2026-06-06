@@ -56,6 +56,34 @@ data class UserAccount(
     val remainingCredits: Int = 0
 )
 
+/* -------- Room 实体：保存的职位/JD库 -------- */
+@Entity(tableName = "saved_jobs")
+data class SavedJobEntity(
+    @PrimaryKey(autoGenerate = true) val id: Long = 0L,
+    val title: String,
+    val company: String = "",
+    val jdText: String,
+    val atsScore: Int = 0,
+    val savedAt: Long = System.currentTimeMillis()
+)
+
+/* -------- Room 实体：求职追踪 -------- */
+enum class ApplicationStage { SAVED, APPLIED, INTERVIEW, OFFER, REJECTED }
+
+@Entity(tableName = "job_applications")
+data class JobApplicationEntity(
+    @PrimaryKey(autoGenerate = true) val id: Long = 0L,
+    val userId: String,
+    val title: String,
+    val company: String = "",
+    val atsScore: Int = 0,
+    val resumeVersion: String = "",
+    val stage: String = ApplicationStage.SAVED.name,
+    val appliedAt: Long = System.currentTimeMillis(),
+    val notes: String = "",
+    val jdText: String = ""
+)
+
 /* -------- Room 实体：保存的简历库 -------- */
 @Entity(tableName = "saved_resumes")
 data class SavedResumeEntity(

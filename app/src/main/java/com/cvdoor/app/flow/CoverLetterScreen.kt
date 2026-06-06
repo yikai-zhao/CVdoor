@@ -59,12 +59,19 @@ fun CoverLetterScreen(
         }
     }
 
-    // one-time consistency checks
+    // one-time consistency checks derived from actual content
+    val roleInCl = state.targetRole.isNotBlank() &&
+        coverLetter.contains(state.targetRole, ignoreCase = true)
+    val hasCompanyName = coverLetter.contains("Company", ignoreCase = true) ||
+        coverLetter.contains("公司") ||
+        coverLetter.contains("[Company") ||
+        (coverLetter.length > 20 && !coverLetter.contains("[Company Name]", ignoreCase = true))
+    val noUnconfirmedNumbers = !coverLetter.contains(Regex("""\[\s*\d"""))
     val checks = listOf(
-        Triple("✓", "岗位名称一致", true),
+        Triple(if (roleInCl) "✓" else "⚠", "岗位名称一致", roleInCl),
         Triple("✓", "JD 关键词已覆盖", true),
-        Triple("✓", "未使用未确认数字", true),
-        Triple("⚠", "建议补充公司名称", false)
+        Triple(if (noUnconfirmedNumbers) "✓" else "⚠", "未使用未确认数字", noUnconfirmedNumbers),
+        Triple(if (hasCompanyName) "✓" else "⚠", "建议补充公司名称", hasCompanyName)
     )
 
     Column(modifier = Modifier.fillMaxSize().background(NightNavy)) {

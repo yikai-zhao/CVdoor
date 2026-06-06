@@ -37,6 +37,12 @@ fun PaymentScreen(
     val billing = remember { BillingManager.get(ctx) }
     val billingState by billing.state.collectAsState()
 
+    // Derive display price from billing state; fall back to the compile-time constant
+    val displayPrice = when (val bs = billingState) {
+        is BillingManager.BillingState.PriceLoaded -> bs.price
+        else -> BillingManager.PRICE_DISPLAY
+    }
+
     // Connect billing when screen appears
     LaunchedEffect(Unit) { billing.connect() }
 
@@ -99,9 +105,9 @@ fun PaymentScreen(
             ) {
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
                     Text("活动价", fontSize = 13.sp, color = TextSecondary)
-                    Text("HK$4.9", fontSize = 42.sp, fontWeight = FontWeight.Black, color = AccentGreen)
+                    Text(displayPrice, fontSize = 42.sp, fontWeight = FontWeight.Black, color = AccentGreen)
                     Row(verticalAlignment = Alignment.CenterVertically) {
-                        Text("原价 HK$9.9", fontSize = 14.sp, color = TextSecondary,
+                        Text("原价 ${BillingManager.PRICE_ORIGINAL}", fontSize = 14.sp, color = TextSecondary,
                             style = LocalTextStyle.current.copy(
                                 textDecoration = androidx.compose.ui.text.style.TextDecoration.LineThrough
                             ))

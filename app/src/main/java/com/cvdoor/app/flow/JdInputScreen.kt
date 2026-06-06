@@ -14,9 +14,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.cvdoor.app.billing.BillingManager
 import com.cvdoor.app.ui.theme.*
 
 @Composable
@@ -31,6 +33,17 @@ fun JdInputScreen(
     val scroll = rememberScrollState()
     val jdOk = state.jdText.trim().length >= 20
     val jdShort = state.jdText.isNotBlank() && !jdOk
+    val ctx = LocalContext.current
+    val billing = remember { BillingManager.get(ctx) }
+    val billingState by billing.state.collectAsState()
+
+    // Pre-connect billing so price is ready by the time user reaches PaymentScreen
+    LaunchedEffect(Unit) { billing.connect() }
+
+    val displayPrice = when (val bs = billingState) {
+        is BillingManager.BillingState.PriceLoaded -> bs.price
+        else -> BillingManager.PRICE_DISPLAY
+    }
 
     Box(
         Modifier
@@ -203,7 +216,7 @@ fun JdInputScreen(
                         Text("[✓] $it", color = TextSecondary, fontSize = 12.sp)
                     }
                     Spacer(Modifier.height(4.dp))
-                    Text("本次完整优化：活动价 HK$4.9（原价 HK$9.9）", color = AccentGreen, fontSize = 12.sp)
+                    Text("本次完整优化：活动价 $displayPrice（原价 ${BillingManager.PRICE_ORIGINAL}）", color = AccentGreen, fontSize = 12.sp)
                     Text("下一步将展示示例优化效果。支付后才会生成你的专属结果。", color = TextSecondary, fontSize = 12.sp)
                 }
             }

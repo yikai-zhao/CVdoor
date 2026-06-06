@@ -17,10 +17,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.cvdoor.app.billing.BillingManager
 import com.cvdoor.app.ui.theme.*
 
 // 靜態 Demo 內容（不呼叫 AI，僅展示已準備好的示例）
@@ -32,6 +34,17 @@ fun DemoPreviewScreen(
     onPayNow: () -> Unit    // → PaymentScreen
 ) {
     val industryDef = IndustryData.findById(state.industryId)
+    val ctx = LocalContext.current
+    val billing = remember { BillingManager.get(ctx) }
+    val billingState by billing.state.collectAsState()
+
+    // Pre-connect billing so price is ready when user reaches PaymentScreen
+    LaunchedEffect(Unit) { billing.connect() }
+
+    val displayPrice = when (val bs = billingState) {
+        is BillingManager.BillingState.PriceLoaded -> bs.price
+        else -> BillingManager.PRICE_DISPLAY
+    }
 
     Box(modifier = Modifier.fillMaxSize().background(NightNavy)) {
         LazyColumn(
@@ -79,13 +92,13 @@ fun DemoPreviewScreen(
                 ) {
                     Column {
                         Row(verticalAlignment = Alignment.Bottom) {
-                            Text("HK$4.9", fontSize = 32.sp, fontWeight = FontWeight.Bold,
+                            Text(displayPrice, fontSize = 32.sp, fontWeight = FontWeight.Bold,
                                 color = AccentGreen)
                             Spacer(Modifier.width(8.dp))
                             Text("/ 次", fontSize = 14.sp, color = TextSecondary,
                                 modifier = Modifier.padding(bottom = 4.dp))
                             Spacer(Modifier.weight(1f))
-                            Text("原价 HK$9.9", fontSize = 13.sp, color = TextSecondary,
+                            Text("原价 ${BillingManager.PRICE_ORIGINAL}", fontSize = 13.sp, color = TextSecondary,
                                 style = LocalTextStyle.current.copy(
                                     textDecoration = androidx.compose.ui.text.style.TextDecoration.LineThrough
                                 ))
@@ -260,8 +273,8 @@ fun DemoPreviewScreen(
                     modifier = Modifier.fillMaxWidth().padding(bottom = 8.dp)
                 ) {
                     Text("活动价 ", fontSize = 13.sp, color = TextSecondary)
-                    Text("HK$4.9", fontSize = 16.sp, fontWeight = FontWeight.Bold, color = AccentGreen)
-                    Text("  原价 HK$9.9", fontSize = 13.sp, color = TextSecondary)
+                    Text(displayPrice, fontSize = 16.sp, fontWeight = FontWeight.Bold, color = AccentGreen)
+                    Text("  原价 ${BillingManager.PRICE_ORIGINAL}", fontSize = 13.sp, color = TextSecondary)
                 }
                 GradientCta("立即生成我的专属 ATS 结果", onClick = onPayNow)
             }

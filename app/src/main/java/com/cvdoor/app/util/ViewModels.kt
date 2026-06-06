@@ -10,7 +10,6 @@ import com.cvdoor.app.api.ApiService
 import com.cvdoor.app.api.OptimizeReq
 import com.cvdoor.app.auth.AuthDataStore
 import com.cvdoor.app.data.*
-import com.cvdoor.app.score.LocalMockScorer
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 
@@ -90,27 +89,20 @@ class AppVM(app: Application) : AndroidViewModel(app) {
                 val u = uid.value ?: throw IllegalStateException("尚未登录")
                 if (!consumeOne()) throw IllegalStateException("剩余次数不足")
 
-                // 评分 & 优化
-                val before = LocalMockScorer.before(resumeText, jdText)
-                val optimizedText = api.optimize(OptimizeReq(resumeText, jdText)).optimized
-                val after = LocalMockScorer.after(optimizedText, jdText)
+                val resp = api.optimize(OptimizeReq(resumeText, jdText, userId = u))
+                val dimsBefore = resp.dimsBefore ?: resp.beforeScores ?: emptyList()
+                val dimsAfter  = resp.dimsAfter  ?: resp.afterScores  ?: emptyList()
 
                 val rec = OptimizationRecord(
                     id = 0L,
                     userId = u,
                     resumeText = resumeText,
                     jdText = jdText,
-                    optimizedText = optimizedText,
-                    beforeTotal = before.total,
-                    afterTotal = after.total,
-                    dimsBefore = listOf(
-                        before.format, before.keywords, before.semantic,
-                        before.titleMatch, before.readability, before.recency
-                    ),
-                    dimsAfter = listOf(
-                        after.format, after.keywords, after.semantic,
-                        after.titleMatch, after.readability, after.recency
-                    ),
+                    optimizedText = resp.optimized,
+                    beforeTotal = resp.beforeTotal,
+                    afterTotal = resp.afterTotal,
+                    dimsBefore = dimsBefore,
+                    dimsAfter = dimsAfter,
                     createdAt = System.currentTimeMillis()
                 )
 
